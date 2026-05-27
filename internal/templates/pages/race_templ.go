@@ -61,13 +61,13 @@ func Race(names []string, duration int) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, ".0s</div></div></div><div class=\"card bg-base-100 shadow-xl mb-6\"><div class=\"card-body p-4\"><canvas id=\"race-canvas\" width=\"1100\" height=\"420\" class=\"w-full border border-base-300 rounded-lg bg-[#e0f0ff]\"></canvas></div></div><div class=\"flex gap-4 justify-center items-center flex-wrap\"><button id=\"start-btn\" class=\"btn btn-primary btn-lg\">Start Race</button> <button id=\"fullscreen-btn\" class=\"btn btn-lg\">⛶ Fullscreen</button> <a href=\"/\" class=\"btn btn-lg\">New Race</a></div><div id=\"results\" class=\"hidden mt-8\"><div class=\"card bg-base-100 shadow-xl\"><div class=\"card-body\"><h2 class=\"card-title text-2xl\">Results</h2><div id=\"results-list\" class=\"space-y-2 mt-4\"></div></div></div></div></div><script>\n\t\t\tconst names = ")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, ".0s</div></div></div><div class=\"card bg-base-100 shadow-xl mb-6\"><div class=\"card-body p-4\"><canvas id=\"race-canvas\" width=\"1100\" height=\"420\" class=\"w-full border border-base-300 rounded-lg bg-[#e0f0ff]\"></canvas></div></div><!-- Live Top 3 Sidebar --><div id=\"live-leaderboard\" class=\"hidden mb-4 max-w-md mx-auto bg-base-200 p-3 rounded-lg text-sm\"><div class=\"font-semibold mb-2\">Current Leaders</div><div id=\"live-leaders-list\" class=\"space-y-1\"></div></div><div id=\"race-controls\" class=\"flex gap-3 justify-center items-center flex-wrap\"><button id=\"start-btn\" class=\"btn btn-primary btn-lg\">Start Race</button> <button id=\"pee-btn\" class=\"btn btn-warning btn-lg hidden\">I need to pee</button> <button id=\"run-again-btn\" class=\"btn btn-accent btn-lg hidden\">Run Again</button> <button id=\"hide-controls-btn\" class=\"btn btn-ghost btn-lg\">Hide Controls</button> <button id=\"fullscreen-btn\" class=\"btn btn-lg\">⛶ Fullscreen</button> <a href=\"/\" class=\"btn btn-lg\">New Race</a></div><!-- Name Display Options --><div id=\"name-options\" class=\"flex justify-center gap-2 mt-3 text-sm\"><span class=\"self-center mr-2 text-base-content/70\">Names:</span> <button type=\"button\" class=\"btn btn-xs btn-outline\" onclick=\"setNameDisplay('full')\">Full</button> <button type=\"button\" class=\"btn btn-xs btn-outline\" onclick=\"setNameDisplay('short')\">Short</button> <button type=\"button\" class=\"btn btn-xs btn-outline\" onclick=\"setNameDisplay('hidden')\">Hidden</button></div><!-- Enhanced Results Section with Dramatic Reveal --><div id=\"results\" class=\"hidden mt-8 max-w-3xl mx-auto\"><div class=\"text-center mb-6\"><div id=\"winner-announcement\" class=\"text-4xl font-bold tracking-tight mb-2 opacity-0 transition-all duration-700\">🏆 THE WINNER IS...</div><div id=\"winner-name\" class=\"text-6xl font-extrabold text-primary opacity-0 transition-all duration-700 scale-95\"><!-- Populated by JS --></div></div><div class=\"card bg-base-100 shadow-2xl border border-base-300\"><div class=\"card-body\"><h2 class=\"card-title text-2xl justify-center mb-4\">Final Results</h2><div id=\"results-list\" class=\"space-y-3\"></div></div></div><div class=\"flex flex-wrap gap-3 justify-center mt-6\"><button onclick=\"copyWinner()\" class=\"btn btn-primary\">Copy Winner Name</button> <button onclick=\"copyFullResults()\" class=\"btn btn-outline\">Copy Full Results</button></div></div><!-- Recent Race History --><div id=\"history-section\" class=\"hidden mt-8 max-w-2xl mx-auto\"><h3 class=\"text-lg font-semibold mb-2 px-1\">Recent Races</h3><div id=\"history-list\" class=\"space-y-2\"></div></div></div><script>\n\t\t\tconst names = ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			templ_7745c5c3_Var4, templ_7745c5c3_Err := templruntime.ScriptContentOutsideStringLiteral(strings.Join(names, "|"))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/pages/race.templ`, Line: 44, Col: 44}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/pages/race.templ`, Line: 86, Col: 44}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var4)
 			if templ_7745c5c3_Err != nil {
@@ -79,13 +79,13 @@ func Race(names []string, duration int) templ.Component {
 			}
 			templ_7745c5c3_Var5, templ_7745c5c3_Err := templruntime.ScriptContentOutsideStringLiteral(duration)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/pages/race.templ`, Line: 45, Col: 31}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/pages/race.templ`, Line: 87, Col: 31}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var5)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, ";\n\t\t\t// Race logic will be loaded from external file for now\n\t\t\twindow.RACE_NAMES = names.split(\"|\").filter(n => n.length > 0);\n\t\t\twindow.RACE_DURATION = duration;\n\t\t</script> <script src=\"/static/js/race.js\"></script>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, ";\n\t\t\t// Race logic will be loaded from external file for now\n\t\t\twindow.RACE_NAMES = names.split(\"|\").filter(n => n.length > 0);\n\t\t\twindow.RACE_DURATION = duration;\n\n\t\t\t// New: Race ID from backend (for persistence)\n\t\t\tconst urlParams = new URLSearchParams(window.location.search);\n\t\t\twindow.RACE_ID = urlParams.get('id') || null;\n\t\t\twindow.IS_SPECTATOR = urlParams.get('spectator') === '1';\n\n\t\t\t// Boat collection / theme support\n\t\t\twindow.RACE_BOAT_COLLECTION = urlParams.get('collection') || 'default';\n\n\t\t\t// Background collection support (independent of boat collection)\n\t\t\twindow.RACE_BACKGROUND_COLLECTION = urlParams.get('bg') || urlParams.get('background') || 'default';\n\t\t</script> <script src=\"/static/js/race-logic.js\"></script> <script src=\"/static/js/race.js\"></script>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

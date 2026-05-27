@@ -9,6 +9,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.13] - 2026-05-??
+
+**This is a focused frontend testing and hardening release.** The core racing experience is unchanged, but the most critical user entry point — the race creation flow — has been comprehensively extracted, unit tested, and E2E tested. A real production bug was discovered and fixed as a direct result of the new test coverage.
+
+This release directly executes the top-priority frontend testing items from the project backlog (AGENTS.md).
+
+### Highlights
+- 9 key race creation functions extracted from inline template script into a proper, testable ESM module (`race-logic.js`).
+- 31 Vitest unit tests covering the entire creation path (validation, payload building, API orchestration, form handling, redirect URL construction).
+- 6 Playwright E2E tests exercising the full browser flow including collections, special characters, presets, and the "Test Race" button.
+- Critical production bug fixed: missing `type="module"` on the race-logic.js script tag was causing "Unexpected token 'export'" on every race page after creation. Discovered via E2E.
+- The race creation process (the exact area flagged as suspicious) is now the best-tested and most reliable part of the frontend.
+
+### Added
+- New `web/static/js/race-logic.test.js` (31 tests).
+- New `e2e/race-creation.spec.js` (6 tests) + `playwright.config.js` (auto-starting server on port 9090).
+- `RELEASE-PLAN-0.1.13.md` documenting the full scope and rationale.
+
+### Changed
+- `web/static/js/race-logic.js` now contains the complete, exported race creation logic (parseNames through submitRaceCreation, plus fillTestNames/setDuration with window fallbacks).
+- `internal/templates/pages/setup.templ` submit handler reduced from ~40 lines of inline logic to a tiny 8-line listener that delegates to the extracted functions.
+- `internal/templates/pages/race.templ` now correctly loads race-logic.js as an ES module (the bugfix).
+
+### Fixed
+- Race page completely broken after creation redirect due to ESM module loading error. The new E2E layer paid for itself on the first real run.
+
+---
+
 ## [0.1.12] - 2026-05-??
 
 **This is an infrastructure and sustainability focused release.** The core racing experience remains stable, while the project has received major improvements in containerization, deployment model, release process, and documentation.
@@ -64,6 +92,8 @@ Wafflerace 0.1.12 makes the project significantly easier and more professional t
 
 ---
 
-[Unreleased]: https://github.com/notfixingit3/wafflerace/compare/v0.1.11...HEAD
+[Unreleased]: https://github.com/notfixingit3/wafflerace/compare/v0.1.13...HEAD
+[0.1.13]: https://github.com/notfixingit3/wafflerace/compare/v0.1.12...v0.1.13
+[0.1.12]: https://github.com/notfixingit3/wafflerace/releases/tag/v0.1.12
 [0.1.11]: https://github.com/notfixingit3/wafflerace/releases/tag/v0.1.11
 [0.1.9]: https://github.com/notfixingit3/wafflerace/releases/tag/v0.1.9

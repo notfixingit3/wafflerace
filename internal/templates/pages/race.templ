@@ -47,12 +47,31 @@ templ Race(names []string, duration int) {
 				<button type="button" class="btn btn-xs btn-outline" onclick="setNameDisplay('hidden')">Hidden</button>
 			</div>
 
-			<div id="results" class="hidden mt-8">
-				<div class="card bg-base-100 shadow-xl">
-					<div class="card-body">
-						<h2 class="card-title text-2xl">Results</h2>
-						<div id="results-list" class="space-y-2 mt-4"></div>
+			<!-- Enhanced Results Section with Dramatic Reveal -->
+			<div id="results" class="hidden mt-8 max-w-3xl mx-auto">
+				<div class="text-center mb-6">
+					<div id="winner-announcement" class="text-4xl font-bold tracking-tight mb-2 opacity-0 transition-all duration-700">
+						🏆 THE WINNER IS...
 					</div>
+					<div id="winner-name" class="text-6xl font-extrabold text-primary opacity-0 transition-all duration-700 scale-95">
+						<!-- Populated by JS -->
+					</div>
+				</div>
+
+				<div class="card bg-base-100 shadow-2xl border border-base-300">
+					<div class="card-body">
+						<h2 class="card-title text-2xl justify-center mb-4">Final Results</h2>
+						<div id="results-list" class="space-y-3"></div>
+					</div>
+				</div>
+
+				<div class="flex flex-wrap gap-3 justify-center mt-6">
+					<button onclick="copyWinner()" class="btn btn-primary">
+						Copy Winner Name
+					</button>
+					<button onclick="copyFullResults()" class="btn btn-outline">
+						Copy Full Results
+					</button>
 				</div>
 			</div>
 
@@ -74,8 +93,14 @@ templ Race(names []string, duration int) {
 			const urlParams = new URLSearchParams(window.location.search);
 			window.RACE_ID = urlParams.get('id') || null;
 			window.IS_SPECTATOR = urlParams.get('spectator') === '1';
+
+			// Boat collection / theme support
+			window.RACE_BOAT_COLLECTION = urlParams.get('collection') || 'default';
+
+			// Background collection support (independent of boat collection)
+			window.RACE_BACKGROUND_COLLECTION = urlParams.get('bg') || urlParams.get('background') || 'default';
 		</script>
-		<script src="/static/js/race-logic.js"></script>
+		<script type="module" src="/static/js/race-logic.js"></script>
 		<script src="/static/js/race.js"></script>
 	}
 }

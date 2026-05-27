@@ -44,17 +44,27 @@ This is a companion project to [Project Syrup](https://github.com/notfixingit3/w
 
 ## Current Status
 
+**v0.1.13** — Frontend Testing & Race Creation Hardening
+
+This release focuses on making the most critical user entry point (creating and starting a race) the most reliable and well-tested part of the application.
+
+- **Race creation extracted** — All creation logic moved from inline template scripts into `web/static/js/race-logic.js` as proper, testable ESM functions.
+- **31 Vitest unit tests** — Comprehensive coverage of parsing, validation, payload building, API calls, form handling, and redirect URL construction.
+- **6 Playwright E2E tests** — Full browser flows including the "Test Race" button, duration presets, collections, and special characters.
+- **Real bug fixed** — A production-breaking "Unexpected token 'export'" error on the race page (after creation) was discovered and fixed thanks to the new E2E layer.
+- **Test infrastructure** — Added Playwright + auto-starting dev server configuration for reliable E2E runs.
+
+See the [changelog](CHANGELOG.md) for the full list of changes. Run `npm test` for unit tests and `npm run test:e2e` for end-to-end tests.
+
 **v0.1.12** — Infrastructure & Sustainability Release
 
-This release focuses on making Wafflerace easier to run, deploy, and maintain long-term:
+This release focused on making Wafflerace easier to run, deploy, and maintain long-term:
 
 - **Docker publishing** — Official multi-arch images (amd64 + arm64) with provenance, SBOM, and attestations are now published to GHCR on every release.
 - **Development images** — A `:dev` image (plus `sha-` tags) is automatically published on pushes to the `dev` branch.
 - **Simplified deployment** — Compose files no longer bundle Traefik or CrowdSec. They are now lightweight and designed to work with an existing reverse proxy.
 - **Release process** — All `v*` tags must come from the `dev` branch (enforced in CI).
 - **Documentation** — Significant improvements to guides and contributor experience.
-
-See the [changelog](CHANGELOG.md) for the full list of changes.
 
 **v0.1.9** — Major asset milestone
 
@@ -74,6 +84,7 @@ Wafflerace uses high-quality AI-generated boat sprites and layered river backgro
 - Full race history + analytics
 - Boat collections / themes support
 - Docker-ready (works well behind existing Traefik + optional CrowdSec)
+- Growing test suite: Vitest (unit) + Playwright (E2E) focused on the race creation flow
 
 ---
 

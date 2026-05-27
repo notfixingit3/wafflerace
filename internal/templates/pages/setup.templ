@@ -108,87 +108,22 @@ templ Setup() {
 			</div>
 		</div>
 
-		<script>
+		<script type="module">
+			import { getRaceFormValues, submitRaceCreation } from '/static/js/race-logic.js';
+
 			document.getElementById('race-form').addEventListener('submit', async function(e) {
 				e.preventDefault();
 
-				const form = e.target;
-				const names = form.querySelector('textarea[name="names"]').value.trim();
-				const duration = parseInt(form.querySelector('input[name="duration"]').value, 10) || 30;
+				const values = getRaceFormValues(e.target);
 
-				if (!names) {
-					alert("Please enter at least one name");
-					return;
-				}
+				const result = await submitRaceCreation(values);
 
-				const nameList = names.split('\n').map(n => n.trim()).filter(n => n.length > 0);
-
-				try {
-					const res = await fetch('/api/races', {
-						method: 'POST',
-						headers: { 'Content-Type': 'application/json' },
-						body: JSON.stringify({ names: nameList, duration })
-					});
-
-					if (!res.ok) {
-						throw new Error('Failed to create race');
-					}
-
-					const data = await res.json();
-					// Redirect to race page with the race ID + selected collections
-					let redirectUrl = `/race?id=${data.id}&names=${encodeURIComponent(nameList.join(','))}&duration=${duration}`;
-					
-					if (boatCollection !== 'default') {
-						redirectUrl += `&collection=${boatCollection}`;
-					}
-					if (bgCollection !== 'default') {
-						redirectUrl += `&bg=${bgCollection}`;
-					}
-					
-					window.location.href = redirectUrl;
-				} catch (err) {
-					console.error(err);
-					alert("Failed to start race. Please try again.");
+				if (result.success) {
+					window.location.href = result.redirectUrl;
+				} else {
+					alert(result.error || "Failed to start race. Please try again.");
 				}
 			});
-
-			function fillTestNames() {
-				const textarea = document.querySelector('textarea[name="names"]');
-				const durationInput = document.getElementById('duration-input');
-
-				if (!textarea) return;
-
-				const testNames = [
-					"Alice Thompson",
-					"Marcus Rivera",
-					"Sofia Patel",
-					"Liam Chen",
-					"Isabella Morales",
-					"Noah Kim",
-					"Olivia Santos",
-					"Ethan Brooks",
-					"Mia Delgado",
-					"Lucas Harper",
-					"Amelia Quinn",
-					"Benjamin Cruz",
-					"Charlotte Vega",
-					"Daniel Ortiz",
-					"Harper Singh"
-				];
-
-				textarea.value = testNames.join('\n');
-
-				if (durationInput) {
-					durationInput.value = 30;
-				}
-			}
-
-			function setDuration(seconds) {
-				const durationInput = document.getElementById('duration-input');
-				if (durationInput) {
-					durationInput.value = seconds;
-				}
-			}
 		</script>
 	}
 }

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -9,6 +10,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	"github.com/notfixingit3/wafflerace/internal/db"
 )
 
 func TestStartRace(t *testing.T) {
@@ -47,7 +51,6 @@ func TestStartRace(t *testing.T) {
 			req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 			c.Request = req
 
-			// Force Gin to parse the form
 			_ = c.Request.ParseForm()
 
 			StartRace(c)
@@ -70,4 +73,95 @@ func TestShowRace(t *testing.T) {
 	assert.Equal(t, "text/html", w.Header().Get("Content-Type"))
 	assert.Contains(t, w.Body.String(), "Alice")
 	assert.Contains(t, w.Body.String(), "Bob")
+}
+
+// === API Validation Tests (no DB required) ===
+
+func TestCreateRaceAPI_Validation(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+
+	body := `{"names": [], "duration": 45}`
+	req := httptest.NewRequest("POST", "/api/races", strings.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	c.Request = req
+
+	CreateRaceAPI(c)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestSaveResultAPI_Validation(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	saveBody := `{"race_id": "", "winner_name": "Alice"}`
+	req := httptest.NewRequest("POST", "/api/results", strings.NewReader(saveBody))
+	req.Header.Set("Content-Type", "application/json")
+	c.Request = req
+
+	SaveResultAPI(c)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+// === DB-backed handler tests ===
+
+func TestGetHistoryAPI_WithData(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	cleanup := db.SetupTestDBForHandlers(t)
+	defer cleanup()
+
+	id1, _ := db.CreateRace(30, []string{"Alice", "Bob"})
+	id2, _ := db.CreateRace(45, []string{"Carol"})
+	_ = db.SaveResult(id1, "Alice")
+	_ = db.SaveResult(id2, "Carol")
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("GET", "/api/history", nil)
+
+	GetHistoryAPI(c)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	var response map[string]interface{}
+	err := json.Unmarshal(w.Body.Bytes(), &response)
+	require.NoError(t, err)
+
+	results := response["results"].([]interface{})
+	assert.Len(t, results, 2)
+}
+
+func TestGetStatsAPI_WithData(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	cleanup := db.SetupTestDBForHandlers(t)
+	defer cleanup()
+
+	id1, _ := db.CreateRace(30, []string{"Alice"})
+	id2, _ := db.CreateRace(45, []string{"Bob", "Carol"})
+	id3, _ := db.CreateRace(30, []string{"Alice"})
+
+	_ = db.SaveResult(id1, "Alice")
+	_ = db.SaveResult(id2, "Bob")
+	_ = db.SaveResult(id3, "Alice")
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("GET", "/api/stats", nil)
+
+	GetStatsAPI(c)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	var response map[string]interface{}
+	err := json.Unmarshal(w.Body.Bytes(), &response)
+	require.NoError(t, err)
+
+	assert.Equal(t, float64(3), response["total_races"])
 }

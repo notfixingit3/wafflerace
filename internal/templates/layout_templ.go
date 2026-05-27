@@ -42,7 +42,7 @@ func Layout(title string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, " | Wafflerace</title><link rel=\"icon\" href=\"data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧇</text></svg>\"><link rel=\"stylesheet\" href=\"/static/css/app.css\"></head><body class=\"bg-base-200 min-h-screen\"><div class=\"navbar bg-base-100 shadow-sm\"><div class=\"flex-1\"><a href=\"/\" class=\"btn btn-ghost text-xl\"><img src=\"/assets/logo.png\" alt=\"Wafflerace\" class=\"h-8 max-w-[110px] mr-2 object-contain\"> Wafflerace</a></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, " | Wafflerace</title><link rel=\"icon\" href=\"data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧇</text></svg>\"><link rel=\"stylesheet\" href=\"/static/css/app.css\"></head><body class=\"bg-base-200 min-h-screen\"><div class=\"navbar bg-base-100 shadow-sm\"><div class=\"flex-1\"><a href=\"/\" class=\"btn btn-ghost text-xl\"><picture><source srcset=\"/assets/logo.webp\" type=\"image/webp\"> <img src=\"/assets/logo.png\" alt=\"Wafflerace\" class=\"h-8 max-w-[220px] mr-1 object-contain\"></picture></a></div><div class=\"flex-none\"><a href=\"/history\" class=\"btn btn-ghost\">History</a></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -50,7 +50,7 @@ func Layout(title string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<footer class=\"mt-12 py-5 text-center text-sm text-base-content/70 border-t border-base-300\">Wafflerace • Made for fun giveaways &amp; streams • Companion to <a href=\"https://github.com/notfixingit3/waffle\" class=\"link\" target=\"_blank\">Project Syrup</a></footer></body></html>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<script type=\"module\" src=\"/static/js/race-logic.js\"></script><footer class=\"mt-12 py-5 text-center text-sm text-base-content/70 border-t border-base-300\">Wafflerace • Made for fun giveaways &amp; streams • Companion to <a href=\"https://github.com/notfixingit3/waffle\" class=\"link\" target=\"_blank\">Project Syrup</a></footer></body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
