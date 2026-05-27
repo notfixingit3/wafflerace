@@ -27,19 +27,24 @@ RUN templ generate
 # Build binary
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o /wafflerace ./cmd/server
 
-# === Runtime ===
+# === Runtime Stage ===
+# We use a minimal Alpine image for a small attack surface and fast startup.
 FROM alpine:3.21
 
 WORKDIR /app
 
 RUN apk --no-cache add ca-certificates tzdata
 
+# Copy only the artifacts we need from the builder stage
 COPY --from=builder /wafflerace /app/wafflerace
 COPY --from=builder /app/web /app/web
 COPY --from=builder /app/assets /app/assets
 
+# Create a non-root user and give it ownership of the data directory
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+RUN mkdir -p /app/data && chown -R appuser:appgroup /app/data
 USER appuser
 
 EXPOSE 9090
+
 ENTRYPOINT ["/app/wafflerace"]
