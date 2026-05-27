@@ -1,0 +1,62 @@
+name: Build and Push Dev Docker Image
+
+on:
+  push:
+    branches:
+      - dev
+
+# This workflow builds and publishes a "dev" image on every push to the dev branch.
+# It is intended for testing the latest changes without needing to build locally.
+#
+# Resulting image:
+#   ghcr.io/notfixingit3/wafflerace:dev
+#
+# This is separate from the release workflow, which only runs on version tags
+# and publishes :latest + :vX.Y.Z images.
+
+jobs:
+  build-dev-image:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=raw,value=dev
+            type=sha,format=short,prefix=sha-
+
+      - name: Build and push Docker dev image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: true
+          sbom: true
+          attestations: true
