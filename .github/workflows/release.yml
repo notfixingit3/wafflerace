@@ -7,6 +7,11 @@ on:
 
 jobs:
   build:
+    # Native GitHub branch awareness for tags.
+    # Only runs when the tag was created while on the 'dev' branch.
+    # Note: github.event.base_ref is not 100% reliable in all tag scenarios
+    # (see docs + community reports), but this is the simplest native approach.
+    if: github.event.base_ref == 'refs/heads/dev'
     runs-on: ubuntu-latest
     permissions:
       contents: write
