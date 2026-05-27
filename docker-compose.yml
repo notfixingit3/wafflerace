@@ -29,12 +29,20 @@ services:
     ports:
       - "9090:9090"
     environment:
-      - GIN_MODE=debug
-      - PORT=9090
+      - GIN_MODE=debug          # Use "release" in production
+      - PORT=9090               # Port the app listens on inside the container
+      # Optional: Add more environment variables your deployment needs
+      # - SOME_API_KEY=...
     volumes:
       - ./assets:/app/assets
       - ./data:/app/data
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:9090/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
 # -----------------------------------------------------------------------------
 # Optional: Traefik labels (if you want to test with your own Traefik)

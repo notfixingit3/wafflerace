@@ -154,6 +154,32 @@ Then visit `http://localhost:9090`.
 
 See the compose files themselves for Traefik label examples when using an external reverse proxy.
 
+### Getting Started with Docker (Quick)
+
+**Easiest option (no reverse proxy):**
+
+```bash
+docker compose up -d --build
+```
+
+Visit http://localhost:9090.
+
+**Using your own Traefik:**
+
+1. Create the external network if it doesn't exist:
+   ```bash
+   docker network create proxy
+   ```
+
+2. Edit the labels in `docker-compose.dev.yml` or `docker-compose.prod.yml` with your domain.
+
+3. Start the app:
+   ```bash
+   docker compose -f docker-compose.prod.yml up -d
+   ```
+
+For more details, see the comments inside the compose files and the Docker Images section below.
+
 ### Docker Images
 
 Wafflerace publishes official images to GitHub Container Registry (GHCR).

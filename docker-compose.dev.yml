@@ -42,10 +42,17 @@ services:
     container_name: wafflerace-dev
     restart: unless-stopped
     environment:
-      - PORT=9090
-      - GIN_MODE=release
+      - PORT=9090               # Port the app listens on inside the container
+      - GIN_MODE=release        # Use "debug" locally if you want verbose logs
+      # Add any other environment variables your setup requires below
     networks:
       - proxy
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:9090/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     labels:
       - "traefik.enable=true"
       # === Customize these for your Traefik setup ===
