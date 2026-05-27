@@ -185,22 +185,30 @@ See the compose files themselves for Traefik label examples when using an extern
 
 ### Docker Images
 
-Docker images are published to GitHub Container Registry:
+Docker images are published automatically to GitHub Container Registry (GHCR):
 
-- **Releases** (`v*` tags):  
-  `ghcr.io/notfixingit3/wafflerace:<version>` (e.g. `v0.1.12`)  
-  `ghcr.io/notfixingit3/wafflerace:latest`
+- **Stable releases** (on `v*` tags):
+  - `ghcr.io/notfixingit3/wafflerace:<version>` (e.g. `v0.1.12`)
+  - `ghcr.io/notfixingit3/wafflerace:latest`
 
-- **Development** (every push to the `dev` branch):  
-  `ghcr.io/notfixingit3/wafflerace:dev`
+- **Development / bleeding edge** (on every push to the `dev` branch):
+  - `ghcr.io/notfixingit3/wafflerace:dev`
+  - `ghcr.io/notfixingit3/wafflerace:sha-<short-sha>` (for pinning to a specific commit)
 
-**Recommended branching + image strategy:**
+**Note:** The `:dev` image is **not** rebuilt for documentation-only changes (README, docs, etc.) to avoid unnecessary builds.
 
-- `main` → Stable releases only. Use `:latest` or a pinned version in production.
-- `dev` → Active development. Use the `:dev` image if you want the latest changes without building locally.
-- All releases are created from the `dev` branch (enforced by CI).
+### Recommended Image Usage
 
-See `docker-compose.dev.yml` and `docker-compose.prod.yml` for examples of both building locally and using pre-built images.
+| Branch / Use Case     | Recommended Image Tag          | When to Use                              |
+|-----------------------|--------------------------------|------------------------------------------|
+| Production            | `:latest` or a pinned version  | Stable deployments                       |
+| Active development    | `:dev`                         | Testing latest changes without building  |
+| Reproducible testing  | `:sha-xxxx`                    | Pinning to an exact commit               |
+| Local development     | Build locally (`build: .`)     | When actively modifying code             |
+
+All releases are created from the `dev` branch (enforced by the release workflow).
+
+See `docker-compose.dev.yml` and `docker-compose.prod.yml` for ready-to-use examples of both building locally and consuming pre-built images.
 
 #### Asset Conversion Helpers
 

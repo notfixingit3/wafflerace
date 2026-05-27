@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - dev
+    paths-ignore:
+      # Don't rebuild the dev image for pure documentation changes
+      - '**.md'
+      - 'docs/**'
+      - 'README*'
 
 # This workflow builds and publishes a "dev" image on every push to the dev branch.
 # It is intended for testing the latest changes without needing to build locally.
