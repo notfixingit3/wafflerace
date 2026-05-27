@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log"
 	"net/http"
 	"sort"
 	"strconv"
@@ -43,6 +44,7 @@ func CreateRaceAPI(c *gin.Context) {
 
 	id, err := db.CreateRace(req.Duration, names)
 	if err != nil {
+		log.Printf("[Wafflerace ERROR] failed to create race: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create race"})
 		return
 	}
@@ -61,6 +63,7 @@ func GetHistoryAPI(c *gin.Context) {
 
 	results, err := db.GetRecentResults(limit)
 	if err != nil {
+		log.Printf("[Wafflerace ERROR] failed to fetch history: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch history"})
 		return
 	}
@@ -72,6 +75,7 @@ func GetHistoryAPI(c *gin.Context) {
 func GetStatsAPI(c *gin.Context) {
 	results, err := db.GetRecentResults(1000) // get a lot for stats
 	if err != nil {
+		log.Printf("[Wafflerace ERROR] failed to fetch stats: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch stats"})
 		return
 	}
@@ -142,6 +146,7 @@ func SaveResultAPI(c *gin.Context) {
 	}
 
 	if err := db.SaveResult(raceID, winnerName); err != nil {
+		log.Printf("[Wafflerace ERROR] failed to save result for race %s: %v", raceID, err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to save result"})
 		return
 	}

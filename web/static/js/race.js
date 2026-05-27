@@ -28,6 +28,8 @@ import {
   let pauseStartTime = null;
   let nameDisplayMode = 'short'; // 'full', 'short', or 'hidden'
   let controlsHidden = false;
+  let frameTimes = [];
+  let lastFps = 0;
 
   // === Configuration (centralized for maintainability) ===
   const TOTAL_BOAT_SPRITES = 50;
@@ -602,6 +604,13 @@ import {
   }
 
   function loop() {
+    const nowTimestamp = performance.now();
+    while (frameTimes.length > 0 && frameTimes[0] <= nowTimestamp - 1000) {
+      frameTimes.shift();
+    }
+    frameTimes.push(nowTimestamp);
+    lastFps = frameTimes.length;
+
     try {
       update();
       draw();
@@ -713,6 +722,23 @@ import {
   window.RACE_STATE = {
     get waffles() { return waffles; },
     get parallaxLayers() { return parallaxLayers; }
+  };
+  window.RACE_DEBUG = {
+    teleportToFinish(index) {
+      if (waffles[index]) {
+        waffles[index].x = FINISH_LINE - 10;
+        console.log(`[Wafflerace Debug] Teleported waffle ${index} (${waffles[index].name}) close to finish line.`);
+      }
+    },
+    triggerFinish() {
+      if (startTime && !finished) {
+        startTime = Date.now() - (duration * 1000) - 100;
+        console.log(`[Wafflerace Debug] Triggered immediate race finish.`);
+      }
+    },
+    getFPS() {
+      return lastFps;
+    }
   };
 
   function showRaceHistory() {
