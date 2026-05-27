@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/logo.webp" width="420" alt="Wafflerace logo" />
+  <img src="assets/logo.webp" width="250" alt="Wafflerace logo" />
 </p>
 
 <h1 align="center">Wafflerace</h1>
@@ -43,6 +43,11 @@ This is a companion project to [Project Syrup](https://github.com/notfixingit3/w
 ---
 
 ## Current Status
+
+**Post-v0.1.9** — Release process hardening + asset polish
+- Release workflow now strictly enforces that all `v*` tags must come from the `dev` branch using a real git history check (no more relying on flaky `base_ref`).
+- Multiple rounds of logo refinement (new premium version, transparency fixes, proper WebP usage, removal of fallback notes).
+- Improved CI hygiene (proper `go.sum`, `templ generate` + `goimports`, consistent asset pipeline).
 
 **v0.1.9** — Major asset milestone: Full completion of the Flags of US collection + launch of the new Flags of the World collection, plus important improvements to the boat collections system and loader.
 - Full backend persistence with SQLite (races, history, saved lists)
