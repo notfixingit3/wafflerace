@@ -2,10 +2,6 @@
   <img src="assets/logo.webp" width="420" alt="Wafflerace logo" />
 </p>
 
-<p align="center">
-  <sub>PNG fallback available at <code>assets/logo.png</code></sub>
-</p>
-
 <h1 align="center">Wafflerace</h1>
 
 <p align="center">
