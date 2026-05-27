@@ -49,8 +49,6 @@
 
   // === AI-Generated Boat Sprites (50 right-facing variants) ===
   const boatImages = [];
-  let spritesLoaded = 0;
-
   // Mapping for collections that use human-readable names instead of boat-right-XX
   const FLAGS_OF_US_STATES = [
     'alabama','alaska','arizona','arkansas','california','colorado','connecticut','delaware',
@@ -88,13 +86,10 @@
       img.src = `/assets/boats/collections/${collection}/webp/${base}.webp`;
 
       img.onerror = () => {
-        // Fallback to PNG
+        img.onerror = null; // Prevent infinite loop if fallback also fails
         img.src = `/assets/boats/collections/${collection}/png/${base}.png`;
       };
 
-      img.onload = () => {
-        spritesLoaded++;
-      };
       boatImages.push(img);
     }
   }
@@ -114,10 +109,8 @@
       img.src = `/assets/backgrounds/collections/${collection}/webp/${base}.webp`;
 
       img.onerror = () => {
-        // Fallback to JPG; if that also fails this slot stays empty (we filter later)
+        img.onerror = null; // Prevent infinite loop if fallback also fails
         img.src = `/assets/backgrounds/collections/${collection}/jpg/${base}.jpg`;
-        // If the jpg fallback also 404s, the image will never complete.
-        // We still keep the object so array indices don't shift during load.
       };
 
       bgImages.push(img);
@@ -426,7 +419,9 @@
       : 0;
 
     const totalAssets = TOTAL_BOAT_SPRITES + MAX_BG_IMAGES;
-    const loaded = spritesLoaded + bgImages.filter((b) => b.complete).length;
+    const loaded =
+      boatImages.filter((b) => b.complete).length +
+      bgImages.filter((b) => b.complete).length;
     const loadProgress = Math.min(1, loaded / totalAssets);
 
     // Show loading overlay until assets are ready
