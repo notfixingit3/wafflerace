@@ -45,61 +45,35 @@ This is a companion project to [Project Syrup](https://github.com/notfixingit3/w
 ## Current Status
 
 **v0.1.12 (In Progress)** — Infrastructure & Sustainability Release
-- Docker images are now first-class: published to GHCR on every release (multi-arch amd64 + arm64) with proper provenance, SBOM, and attestations.
-- A dedicated `:dev` image is automatically built and published on pushes to the development branch.
-- Removed the previously bundled Traefik + CrowdSec stack. Compose files are now lightweight and designed to work with an existing reverse proxy setup.
-- Release process is now strictly enforced: all `v*` tags must come from the `dev` branch.
+
+This release focuses on making Wafflerace easier to run and maintain long-term:
+
+- Docker images are now properly published to GHCR on every release (multi-arch: amd64 + arm64) with provenance, SBOM, and attestations.
+- A `:dev` image is automatically published on pushes to the development branch for easy testing of the latest changes.
+- Removed the previously bundled Traefik + CrowdSec stack. The compose files are now lightweight and designed to work with your existing reverse proxy setup.
+- Release process is now strictly enforced — all version tags must come from the `dev` branch.
 - Significant improvements to documentation and release tooling.
 
-**v0.1.9** — Major asset milestone: Full completion of the Flags of US collection + launch of the new Flags of the World collection, plus important improvements to the boat collections system and loader.
-- Full backend persistence with SQLite (races, history, saved lists)
-- Spectator mode + public race links
-- Live "Current Leaders" sidebar
-- Race templates / quick starts
-- Significantly improved history and results UI
-- Better error handling across the app
-- Frontend testing foundation (Vitest)
-- Extracted race logic for maintainability
-- ESLint + Prettier enforced
+See the [changelog](CHANGELOG.md) for full details.
 
-Wafflerace now uses high-quality AI-generated boat sprites and river backgrounds instead of programmer art. The race emphasizes maximum suspense: boats move with chaotic, variable speeds, but no one visually reaches the finish line until the very final seconds.
+**v0.1.9** — Major asset milestone
 
-### v0.1.9 Highlights
-- **Flags of US collection completed** — All 50 U.S. states now have dedicated boats (Alabama → Wyoming). Every boat follows the strict right-facing + stern flag rules.
-- **New "Flags of the World" collection launched** — First 5 countries complete (India, China, United States, Indonesia, Pakistan) using the same rigorous asset pipeline.
-- Boat collection system significantly improved — Loader now properly supports named sprite collections (not just numbered `boat-right-XX` files).
-- Much stricter and more documented asset generation workflow (originals → transparent PNG → WebP) enforced across all collections.
+- Completed the Flags of US boat collection (all 50 states).
+- Launched the Flags of the World collection (first batch of countries).
+- Improved the boat collections system to properly support themed/named collections.
 
-### Key Features (v0.1.7)
+Wafflerace uses high-quality AI-generated boat sprites and layered river backgrounds. The race is deliberately designed for maximum suspense — the winner only becomes visually obvious in the final seconds.
 
-- Much stronger History & Analytics view (stats, searchable table, recent races)
-- Dedicated /history page with analytics
-- Boat Collections / Themes system (switch between different sets of boats, e.g. "Default" vs "Flags of US")
-- Comprehensive frontend testing foundation (Vitest + tests for core logic)
-- Improved error handling and resilience
-- Further frontend architecture cleanup (extracted race-logic.js)
-- Basic management surface via History
-- All previous features (Spectator mode, Live leaders, "I need to pee", templates, etc.)
-- ESLint + Prettier enforced
-- Backend API improvements for future webhooks and integrations
-- 50 unique right-facing AI boat sprites with subtle rocking and reactive name flags
-- Parallax scrolling backgrounds (3 layers at different speeds, randomly selected each race)
-- Synthesized audio: gentle water drone, splashes on big surges, and a win chime
-- Particle effects (syrup drips and small splashes)
-- Smooth loading progress screen while assets load
-- Extremely aggressive final-phase jitter and rubber-banding
-- Strong visual clamping so the leader stays well back until the buzzer
-- "I need to pee" pause button
-- Quick duration presets (15s–5min in 30s steps) + manual input
-- Name display options (full / short / hidden)
-- Hide controls during race for cleaner presentation
-- Race history (last 10 runs stored locally)
-- "Run Again with same names" workflow
-- Touch-friendly setup screen for tablets
-- Up to 50 participants with smooth 60fps canvas animation
-- Clean results with podium + full field (no times shown)
+### Core Features
 
-See the [changelog](https://github.com/notfixingit3/wafflerace/releases/tag/v0.1.1) for full details.
+- Real-time animated race with up to 50 participants
+- Strong visual clamping and final-phase jitter so no one looks like the winner until the end
+- Parallax river backgrounds and particle effects
+- Synthesized audio (water drone + splashes + win chime)
+- Spectator mode with shareable links
+- Full race history + analytics
+- Boat collections / themes support
+- Docker-ready (works well behind existing Traefik + optional CrowdSec)
 
 ---
 
@@ -115,15 +89,26 @@ See the [changelog](https://github.com/notfixingit3/wafflerace/releases/tag/v0.1
 
 ## Deployment
 
-Wafflerace is designed to work with an **existing Traefik** reverse proxy (and optionally CrowdSec for protection). We no longer bundle Traefik or CrowdSec in the compose files.
+Wafflerace is designed to run behind an **existing Traefik** reverse proxy (and optionally behind CrowdSec for protection). We no longer include a bundled reverse proxy or security stack.
 
-The provided `docker-compose.dev.yml` and `docker-compose.prod.yml` contain **only the application service** along with the Traefik labels it needs.
+The provided compose files contain **only the Wafflerace application** plus the minimal Traefik labels it needs.
 
 ### Assumptions
-- You already have Traefik running (and an external Docker network, usually called `proxy`).
-- If you use CrowdSec, you have already configured a middleware (commonly `crowdsec@file`) in your Traefik instance.
+- You already have Traefik running with an external Docker network (usually named `proxy`).
+- If you use CrowdSec, you have a middleware (commonly `crowdsec@file`) already configured in your Traefik.
 
-### Quick Start (Simple / Direct Access)
+### Docker Images
+
+Images are published to GitHub Container Registry:
+
+- Releases: `ghcr.io/notfixingit3/wafflerace:<version>` and `:latest`
+- Development: `ghcr.io/notfixingit3/wafflerace:dev`
+
+See the **Docker Images** section above and the comments inside the compose files for usage examples.
+
+### Quick Start
+
+**Simple local development (no reverse proxy):**
 
 ```bash
 docker compose up -d --build
@@ -131,30 +116,15 @@ docker compose up -d --build
 
 Then visit `http://localhost:9090`.
 
-### Using with Your Own Traefik
+**Using with your own Traefik:**
 
-The compose files include the necessary Traefik labels. Edit the `Host()` rules and other values to match your setup.
-
-**Production example** (using a published release image):
+Edit the labels in `docker-compose.dev.yml` or `docker-compose.prod.yml` to match your domain, then run:
 
 ```bash
 docker compose -f docker-compose.prod.yml up -d
 ```
 
-**Development with published dev image** (no local build needed):
-
-```bash
-# Edit docker-compose.dev.yml and switch from "build: ." to the :dev image
-docker compose -f docker-compose.dev.yml up -d
-```
-
-**Local development** (recommended when actively working on the code):
-
-```bash
-docker compose -f docker-compose.dev.yml up -d --build
-```
-
-Example labels and comments are included directly in the compose files.
+Full examples and label documentation live inside the compose files themselves.
 
 ---
 

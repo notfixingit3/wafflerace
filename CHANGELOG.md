@@ -9,44 +9,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.12] - 2026-??-??
+
 ### Added
-- Docker images are now published to GitHub Container Registry (GHCR) on every release.
-  - Multi-arch support (linux/amd64 + linux/arm64)
-  - Automatic provenance, SBOM, and attestations
-- New `:dev` image tag published on every push to the `dev` branch (with smart filtering to avoid unnecessary rebuilds on docs-only changes).
-- `sha-` tags for exact commit pinning of dev images.
+- Docker images are now first-class citizens:
+  - Official images published to GHCR on every release (`ghcr.io/notfixingit3/wafflerace`).
+  - Multi-architecture support (linux/amd64 + linux/arm64).
+  - Automatic generation of provenance, SBOM, and attestations.
+- New `:dev` floating tag published automatically on every push to the `dev` branch (plus `sha-` tags for exact pinning).
+- Dedicated GitHub Actions workflow (`docker-dev.yml`) for continuous development image publishing.
 
 ### Changed
-- **Breaking for previous users of the bundled proxy setup**: 
-  - Removed the bundled Traefik + CrowdSec services from `docker-compose.dev.yml` and `docker-compose.prod.yml`.
-  - These files now contain **only** the application service + the Traefik labels it needs.
-  - Users are now expected to run Wafflerace behind their own existing Traefik (and optionally CrowdSec) instance.
-- Release workflow now strictly enforces that all `v*` tags must originate from the `dev` branch using real git history checks.
+- **Major deployment model change (breaking for some users)**:
+  - Completely removed the bundled Traefik + CrowdSec services from `docker-compose.dev.yml` and `docker-compose.prod.yml`.
+  - These files now contain **only** the Wafflerace application + the minimal Traefik labels it needs.
+  - Users are now expected to bring their own Traefik (and optionally CrowdSec) setup.
+- Release workflow significantly hardened: all `v*` tags must come from the `dev` branch (enforced via real git history checks instead of the unreliable `base_ref` field).
+- `docker-compose.dev.yml` and `docker-compose.prod.yml` now clearly document the assumption that users have their own reverse proxy.
 
 ### Improved
-- Significantly improved Docker publishing pipeline with proper metadata, caching, and supply-chain security features.
-- Better documentation around Docker usage, image tags, and deployment options.
-- Logo size in the README reduced for better visual balance.
+- Major improvements to Docker publishing pipeline (metadata action, Buildx, layer caching, multi-arch).
+- Significantly better documentation around Docker images, deployment options, and the recommended branching + image strategy (`:latest`, `:<version>`, `:dev`).
+- Logo size in the main README reduced from 420px to 250px for better visual balance on the page.
+- General improvements to CI hygiene and contributor experience.
 
 ---
 
-## [0.1.11] - 2026-05-?? (Previous release)
+## [0.1.11] - 2026-05-??
 
 ### Changed
 - Major improvements to release process and CI hygiene.
-- Work on enforcing releases come only from the `dev` branch.
+- Early work on enforcing that releases must come from the `dev` branch.
 
 ---
 
 ## [0.1.9] - 2026-05-??
 
 ### Added
-- Full completion of the Flags of US boat collection (50/50).
-- Launch of the new Flags of the World collection (first 5 countries).
-- Significant improvements to the boat collections system and loader.
+- Full completion of the Flags of US boat collection (50/50 states).
+- Launch of the new Flags of the World collection (initial countries).
+- Significant improvements to the boat collections loader and system to support named collections.
 
 ### Changed
-- Much stricter and documented asset generation pipeline.
+- Much stricter and better documented asset generation pipeline (originals → PNG → WebP).
 
 ---
 
