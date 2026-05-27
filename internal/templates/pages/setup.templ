@@ -1,0 +1,104 @@
+package pages
+
+import "github.com/notfixingit3/wafflerace/internal/templates"
+
+templ Setup() {
+	@templates.Layout("Start a Race") {
+		<div class="max-w-2xl mx-auto p-6">
+			<div class="card bg-base-100 shadow-xl mt-8">
+				<div class="card-body">
+					<h2 class="card-title text-3xl mb-2">Start a New Race</h2>
+					<p class="text-base-content/70 mb-6">Enter names below (one per line). The waffles will race!</p>
+
+					<form action="/race" method="POST" class="space-y-6">
+						<div>
+							<div class="flex justify-between items-center mb-1">
+								<label class="label">
+									<span class="label-text font-medium">Participants</span>
+								</label>
+								<button 
+									type="button" 
+									class="btn btn-sm btn-outline btn-accent"
+									onclick="fillTestNames()"
+								>
+									Test Race (15 names)
+								</button>
+							</div>
+							<textarea 
+								name="names" 
+								required 
+								class="textarea textarea-bordered w-full h-48 font-mono text-sm"
+								placeholder="Alice&#10;Bob&#10;Charlie&#10;Dana"
+							></textarea>
+							<div class="label">
+								<span class="label-text-alt">One name per line</span>
+							</div>
+						</div>
+
+						<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+							<div>
+								<label class="label">
+									<span class="label-text font-medium">Race Duration</span>
+								</label>
+								<div class="flex gap-2 items-center">
+									<input 
+										type="number" 
+										name="duration" 
+										value="25" 
+										min="10" 
+										max="120" 
+										class="input input-bordered w-24"
+									/>
+									<span class="text-sm">seconds</span>
+								</div>
+							</div>
+						</div>
+
+						<div class="card-actions justify-end pt-4">
+							<button type="submit" class="btn btn-primary btn-lg">
+								Start Race 🧇
+							</button>
+						</div>
+					</form>
+				</div>
+			</div>
+
+			<div class="mt-8 text-center text-sm text-base-content/60">
+				<p>Up to 50 waffles supported • Results are random but feel fair</p>
+			</div>
+		</div>
+
+		<script>
+			function fillTestNames() {
+				const textarea = document.querySelector('textarea[name="names"]');
+				const durationInput = document.querySelector('input[name="duration"]');
+
+				if (!textarea) return;
+
+				const testNames = [
+					"Alice Thompson",
+					"Marcus Rivera",
+					"Sofia Patel",
+					"Liam Chen",
+					"Isabella Morales",
+					"Noah Kim",
+					"Olivia Santos",
+					"Ethan Brooks",
+					"Mia Delgado",
+					"Lucas Harper",
+					"Amelia Quinn",
+					"Benjamin Cruz",
+					"Charlotte Vega",
+					"Daniel Ortiz",
+					"Harper Singh"
+				];
+
+				textarea.value = testNames.join('\n');
+
+				if (durationInput) {
+					durationInput.value = 30;
+				}
+			}
+		</script>
+	}
+}

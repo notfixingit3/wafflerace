@@ -1,0 +1,127 @@
+version: "3.8"
+
+# =============================================================================
+# Wafflerace - Development Environment (Traefik + Let's Encrypt + CrowdSec)
+# =============================================================================
+#
+# PREREQUISITES / CUSTOMIZATION CHECKLIST
+# ----------------------------------------
+# Before running this file, you MUST update the following:
+#
+# [ ] 1. Let's Encrypt email
+#        → Change: admin@projectsyrup.app  (line with acme.email)
+#
+# [ ] 2. Hostnames / Domains
+#        → Change: dev-wafflerace.projectsyrup.app
+#        → Change: traefik.dev-wafflerace.projectsyrup.app (if using dashboard)
+#
+# [ ] 3. External Docker network
+#        → Default is "proxy". Create it if missing:
+#          docker network create proxy
+#
+# [ ] 4. CrowdSec Bouncer API Key
+#        → Replace: CHANGE_ME_WITH_BOUNCER_KEY
+#        → How to generate:
+#          docker compose -f docker-compose.dev.yml up -d crowdsec
+#          docker exec crowdsec cscli bouncers add traefik-bouncer
+#
+# [ ] 5. (Optional) Update Traefik dashboard hostname if desired.
+#
+# Full step-by-step instructions are in the big comment block below.
+# Production version: docker-compose.prod.yml (uses wafflerace.projectsyrup.app)
+#
+# =============================================================================
+
+services:
+  traefik:
+    image: traefik:v3.1
+    container_name: traefik
+    restart: unless-stopped
+    command:
+      - "--api.dashboard=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.email=admin@projectsyrup.app"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+      # CrowdSec bouncer middleware (loaded from file)
+      - "--providers.file.filename=/etc/traefik/dynamic/crowdsec.yml"
+    ports:
+      - "80:80"
+      - "443:443"
+      # Uncomment if you want Traefik dashboard (not recommended in production)
+      # - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/letsencrypt:/letsencrypt
+      - ./traefik/dynamic:/etc/traefik/dynamic:ro
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.dev-wafflerace.projectsyrup.app`)"
+      - "traefik.http.routers.traefik.entrypoints=websecure"
+      - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.traefik.service=api@internal"
+      # CrowdSec protection for Traefik dashboard itself (optional)
+      # - "traefik.http.routers.traefik.middlewares=crowdsec@file"
+
+  crowdsec:
+    image: crowdsecurity/crowdsec:latest
+    container_name: crowdsec
+    restart: unless-stopped
+    environment:
+      - COLLECTIONS=crowdsecurity/traefik
+      - GID=1000   # Adjust if needed
+    volumes:
+      - ./crowdsec/config:/etc/crowdsec
+      - ./crowdsec/data:/var/lib/crowdsec/data
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/log:/var/log:ro
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=false"
+
+  crowdsec-bouncer:
+    image: fbonalair/traefik-crowdsec-bouncer:0.3.0
+    container_name: crowdsec-bouncer
+    restart: unless-stopped
+    environment:
+      - CROWDSEC_AGENT_HOST=crowdsec:8080
+      # Get this key by running: docker exec crowdsec cscli bouncers add traefik-bouncer
+      - CROWDSEC_API_KEY=CHANGE_ME_WITH_BOUNCER_KEY
+      - TRAEFIK_FORWARD_AUTH_URL=http://crowdsec-bouncer:8080/api/v1/forwardAuth
+    depends_on:
+      - crowdsec
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=false"
+
+  app:
+    build: .
+    container_name: wafflerace-dev
+    restart: unless-stopped
+    environment:
+      - PORT=9090
+      - GIN_MODE=release
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      # Router
+      - "traefik.http.routers.wafflerace-dev.rule=Host(`dev-wafflerace.projectsyrup.app`)"
+      - "traefik.http.routers.wafflerace-dev.entrypoints=websecure"
+      - "traefik.http.routers.wafflerace-dev.tls.certresolver=letsencrypt"
+      # Service
+      - "traefik.http.services.wafflerace-dev.loadbalancer.server.port=9090"
+      # CrowdSec protection
+      - "traefik.http.routers.wafflerace-dev.middlewares=crowdsec@file"
+
+networks:
+  proxy:
+    name: proxy
+    external: true

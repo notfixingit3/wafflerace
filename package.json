@@ -1,0 +1,12 @@
+{
+  "name": "wafflerace",
+  "private": true,
+  "scripts": {
+    "build:css": "tailwindcss -i ./web/input.css -o ./web/static/css/app.css --minify",
+    "watch:css": "tailwindcss -i ./web/input.css -o ./web/static/css/app.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.17",
+    "daisyui": "^4.12.23"
+  }
+}

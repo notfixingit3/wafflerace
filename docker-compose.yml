@@ -1,0 +1,11 @@
+services:
+  app:
+    build: .
+    ports:
+      - "9090:9090"
+    environment:
+      - GIN_MODE=debug
+      - PORT=9090
+    volumes:
+      - ./assets:/app/assets
+    restart: unless-stopped

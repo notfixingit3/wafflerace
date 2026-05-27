@@ -64,6 +64,32 @@ Planned MVP features:
 
 ---
 
+## Deployment
+
+Wafflerace is designed to run behind **Traefik** with automatic Let's Encrypt SSL and protected by **CrowdSec**.
+
+Two compose files are provided:
+
+| File                        | Purpose              | Recommended For     |
+|----------------------------|----------------------|---------------------|
+| `docker-compose.dev.yml`   | Development          | Local / Staging     |
+| `docker-compose.prod.yml`  | Production           | Live deployments    |
+
+### Important: Customization Required
+
+**Before running either compose file, open it and complete the "PREREQUISITES / CUSTOMIZATION CHECKLIST"** located right after the `version:` line at the top.
+
+This checklist covers:
+- Let's Encrypt email
+- All hostnames / domains
+- CrowdSec bouncer API key
+- External network name (`proxy`)
+- Production image version pinning
+
+See [README-dev.md](README-dev.md) for more details.
+
+---
+
 ## Relationship to Project Syrup
 
 Wafflerace is a companion project to [Project Syrup](https://github.com/notfixingit3/waffle).
@@ -80,13 +106,17 @@ Active work happens on the `dev` branch.
 
 The `main` branch is kept stable and contains the current README plus minimal supporting files.
 
-### Local Development (once implemented)
+### Local Development
+
+For local development we use the dedicated dev compose file:
 
 ```bash
-docker compose up --build
+docker compose -f docker-compose.dev.yml up -d --build
 ```
 
-Then open http://localhost:8080
+Then open the app at the domain you configured (default example: `dev-wafflerace.projectsyrup.app`).
+
+See [README-dev.md](README-dev.md) for full setup instructions, including Traefik + CrowdSec configuration.
 
 ### Commit Messages
 

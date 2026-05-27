@@ -1,0 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-primary: #c48a3a;
+    --color-primary-content: #3f2a1d;
+    --color-secondary: #8b5a2b;
+    --color-accent: #f4c95f;
+    --color-neutral: #3f2a1d;
+    --color-base-100: #f8f1e3;
+    --color-base-200: #f0e0c8;
+    --color-base-300: #e8d4b0;
+    --color-base-content: #3f2a1d;
+  }
+}
+
+/* DaisyUI theme override for syrupy feel */
+@layer base {
+  :root {
+    --primary: #c48a3a;
+    --primary-content: #3f2a1d;
+    --secondary: #8b5a2b;
+    --accent: #f4c95f;
+    --neutral: #3f2a1d;
+    --base-100: #f8f1e3;
+    --base-200: #f0e0c8;
+    --base-300: #e8d4b0;
+    --base-content: #3f2a1d;
+  }
+}
+
+/* Custom syrupy tweaks */
+.btn-primary {
+  @apply bg-[#c48a3a] text-[#3f2a1d] hover:bg-[#8b5a2b];
+}
+
+.card {
+  @apply bg-base-100 shadow-md;
+}
+
+/* Force navbar logo size restriction (Tailwind arbitrary values not generating reliably) */
+.navbar a img[alt="Wafflerace"] {
+  height: 2rem !important;
+  max-width: 110px !important;
+  object-fit: contain !important;
+  margin-right: 0.5rem !important;
+}
