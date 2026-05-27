@@ -9,6 +9,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Comprehensive unit test suite for `ParticleSystem` in `web/static/js/race-particles.test.js` (7 tests covering particle emission, updates, canvas rendering, and confetti).
+- Table-driven unit tests for backend API handlers (`CreateRaceAPI`, `SaveResultAPI`, `GetHistoryAPI`, `GetStatsAPI`) in `internal/handlers/race_test.go`.
+- Isolated SQLite database helper `SetupTestDBForHandlers` in `internal/db/test_helpers.go` to provide clean in-memory database environments for API handler tests.
+- 13 new Vitest test cases in `web/static/js/race-logic.test.js` covering dynamic layout spacing, display name formatting, leaderboard sorting, average progress, and individual waffle physics updates.
+
+### Changed
+- Modularized the core canvas runner `race.js` by extracting and refactoring layout, leaderboard sorting, formatting, and waffle position calculations into `race-logic.js` as pure functions.
+- Decoupled `race.js` logic by split-importing modular files `race-audio.js` and `race-particles.js` as ES modules.
+- Optimized canvas update loop performance by calculating average waffle progress once per frame instead of inside the waffle iteration loop.
+
+### Removed
+- Legacy static boilerplate file `web/static/index.html` (rendered obsolete by backend Templ/Go Gin).
+- Obsolete draft logo asset variations (`logo-alt.png`, `logo-old.png`, `logo-source-v2.png`, etc.) under the `assets/` directory.
+- Obsolete wrong-direction boat concept images under `assets/boat-concepts/old-wrong-direction/`.
+- Untracked obsolete release plan `RELEASE-PLAN-0.1.12.md`.
+
+
 ## [0.1.13] - 2026-05-??
 
 **This is a focused frontend testing and hardening release.** The core racing experience is unchanged, but the most critical user entry point — the race creation flow — has been comprehensively extracted, unit tested, and E2E tested. A real production bug was discovered and fixed as a direct result of the new test coverage.

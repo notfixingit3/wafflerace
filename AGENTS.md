@@ -12,7 +12,7 @@ When starting a fresh session:
 4. Use the conversion script (`npm run convert:webp`) when new images are generated.
 5. The most important rules are called out in **bold** throughout this document (especially boat direction and visual clamping).
 
-## Current Progress Snapshot (as of v0.1.9)
+## Current Progress Snapshot (as of v0.1.14 unreleased)
 
 **Boats**
 - Default collection: 50/50 complete
@@ -24,11 +24,11 @@ When starting a fresh session:
 - Nature collection: 5/30 generated (first batch committed)
 
 **Key Recent Architectural & Process Changes**
-- Full collections system for boats and backgrounds fully operational
-- Boat loader made collection-aware (properly supports named files for themed collections like state/country flags)
-- Extremely disciplined asset pipeline now enforced: raw Imagine JPGs → `originals/` → clean transparent PNG → optimized WebP
-- Runtime theme switching via `?collection=` and `?bg=` working well
-- Background loader made resilient for variable collection sizes
+- Core canvas runner `race.js` fully modularized into ES modules (`race-particles.js`, `race-audio.js`, and logic helpers in `race-logic.js`).
+- Complete test coverage added for waffle initialization, layouts, displays, leaders, and physics simulation.
+- Expanded Vitest coverage with a new unit test suite for the `ParticleSystem`.
+- Completed SQLite database isolation and written comprehensive table-driven tests for all API handlers.
+- Cleaned up obsolete draft assets, wrong-direction boat concepts, and legacy boilerplate HTML code.
 
 See the detailed backlog below for next priorities.
 
@@ -101,16 +101,16 @@ See `assets/boat-concepts/README.md` for strict generation rules (especially "**
 - Organizing assets into **collections** (boats + backgrounds) was a major architectural improvement for long-term theming and variety.
 - The dramatic winner reveal is one of the highest-ROI areas for making the product feel premium.
 
-## Future Direction & Backlog (as of v0.1.8)
+## Future Direction & Backlog (as of v0.1.14)
 
 ### Testing (High Priority)
 - **Backend**:
-  - Proper isolation for DB tests using in-memory SQLite (`:memory:` or unique files per test).
-  - Comprehensive table-driven tests for all API handlers (`CreateRaceAPI`, `SaveResultAPI`, `GetHistoryAPI`, `GetStatsAPI`).
-  - Tests for error paths, validation, and edge cases.
+  - Proper isolation for DB tests using in-memory SQLite (Complete).
+  - Comprehensive table-driven tests for all API handlers, error paths, validation, and edge cases (Complete).
   - Integration-style tests that exercise the full create-race → save-result → history flow.
 - **Frontend**:
-  - Significantly expand Vitest coverage in `race-logic.js` and extract more pure functions from `race.js` (particle updates, leaderboard logic, pause timing, name formatting, collection loading, etc.).
+  - Significantly expand Vitest coverage in `race-logic.js` and extract more pure functions from `race.js` (Complete: name display formatting, leaderboard logic, layout spacing, waffle state init, and waffle physics).
+  - Add unit tests for `ParticleSystem` in `race-particles.test.js` (Complete).
   - Add tests for the dramatic results reveal logic.
   - Consider Playwright or Cypress for critical E2E flows (create race → run → dramatic results + history persistence + collection switching).
 - Add E2E smoke tests for the most important user journeys.
