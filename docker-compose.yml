@@ -1,6 +1,31 @@
+# =============================================================================
+# Wafflerace - Simple / Direct Access
+# =============================================================================
+#
+# This is the simplest way to run Wafflerace.
+# It exposes the app directly on port 9090 (no reverse proxy).
+#
+# Useful for:
+# - Local development / testing
+# - Quick demos
+# - Environments where you don't (yet) have Traefik
+#
+# If you already run Traefik, prefer docker-compose.dev.yml or
+# docker-compose.prod.yml instead. Those files contain only the app +
+# the Traefik labels it needs.
+#
+# Docker images are published to GHCR:
+#   ghcr.io/notfixingit3/wafflerace:latest
+#   ghcr.io/notfixingit3/wafflerace:<version>
+#   ghcr.io/notfixingit3/wafflerace:dev     (bleeding edge)
+#
+# =============================================================================
+
 services:
   app:
     build: .
+    # For production-style usage with a published image instead of building:
+    # image: ghcr.io/notfixingit3/wafflerace:latest
     ports:
       - "9090:9090"
     environment:
@@ -8,4 +33,21 @@ services:
       - PORT=9090
     volumes:
       - ./assets:/app/assets
+      - ./data:/app/data
     restart: unless-stopped
+
+# -----------------------------------------------------------------------------
+# Optional: Traefik labels (if you want to test with your own Traefik)
+# -----------------------------------------------------------------------------
+# You can add these labels to the app service above if you're running
+# this compose file against an existing Traefik instance:
+#
+# labels:
+#   - "traefik.enable=true"
+#   - "traefik.http.routers.wafflerace.rule=Host(`your-domain.example.com`)"
+#   - "traefik.http.routers.wafflerace.entrypoints=websecure"
+#   - "traefik.http.routers.wafflerace.tls.certresolver=letsencrypt"
+#   - "traefik.http.services.wafflerace.loadbalancer.server.port=9090"
+#
+# Remember to connect the service to your Traefik network (usually "proxy").
+# -----------------------------------------------------------------------------

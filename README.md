@@ -156,30 +156,32 @@ See the compose files themselves for Traefik label examples when using an extern
 
 ### Docker Images
 
-Docker images are published automatically to GitHub Container Registry (GHCR):
+Wafflerace publishes official images to GitHub Container Registry (GHCR).
 
-- **Stable releases** (on `v*` tags):
-  - `ghcr.io/notfixingit3/wafflerace:<version>` (e.g. `v0.1.12`)
+**Available tags:**
+
+- **Stable releases** (`v*` tags from the release workflow):
+  - `ghcr.io/notfixingit3/wafflerace:<version>` — e.g. `v0.1.12`
   - `ghcr.io/notfixingit3/wafflerace:latest`
 
-- **Development / bleeding edge** (on every push to the `dev` branch):
+- **Development / bleeding edge** (built on every push to `dev`):
   - `ghcr.io/notfixingit3/wafflerace:dev`
-  - `ghcr.io/notfixingit3/wafflerace:sha-<short-sha>` (for pinning to a specific commit)
+  - `ghcr.io/notfixingit3/wafflerace:sha-<short-sha>` — for pinning to an exact commit
 
-**Note:** The `:dev` image is **not** rebuilt for documentation-only changes (README, docs, etc.) to avoid unnecessary builds.
+**Note:** The `:dev` image skips rebuilds for documentation-only changes.
 
-### Recommended Image Usage
+**Recommended usage:**
 
-| Branch / Use Case     | Recommended Image Tag          | When to Use                              |
-|-----------------------|--------------------------------|------------------------------------------|
-| Production            | `:latest` or a pinned version  | Stable deployments                       |
-| Active development    | `:dev`                         | Testing latest changes without building  |
-| Reproducible testing  | `:sha-xxxx`                    | Pinning to an exact commit               |
-| Local development     | Build locally (`build: .`)     | When actively modifying code             |
+| Use Case                  | Recommended Image                          | Notes                                      |
+|---------------------------|--------------------------------------------|--------------------------------------------|
+| Production / Staging      | `:latest` or a pinned `:<version>`         | Always prefer pinning in production        |
+| Testing latest changes    | `:dev`                                     | Fast way to try work from the dev branch   |
+| Reproducible / debugging  | `:sha-xxxx`                                | Pins to a specific commit                  |
+| Local development         | Build locally (`build: .`)                 | Best when actively modifying the code      |
 
-All releases are created from the `dev` branch (enforced by the release workflow).
+See the compose files for ready-to-use examples (including how to switch between building locally and using pre-built images).
 
-See `docker-compose.dev.yml` and `docker-compose.prod.yml` for ready-to-use examples of both building locally and consuming pre-built images.
+All releases are created from the `dev` branch (enforced by CI).
 
 #### Asset Conversion Helpers
 

@@ -10,8 +10,9 @@ version: "3.8"
 # You are expected to already have your own Traefik (and optionally CrowdSec)
 # running and connected to an external Docker network called "proxy".
 #
-# Docker images are published on every push to the `dev` branch as:
+# Docker images are published automatically on pushes to the `dev` branch:
 #   ghcr.io/notfixingit3/wafflerace:dev
+#   ghcr.io/notfixingit3/wafflerace:sha-xxxx   (exact commit)
 #
 # Two common ways to run during development:
 #
@@ -21,6 +22,10 @@ version: "3.8"
 #   2. Use the latest image from the dev branch (faster, no local build):
 #      - Comment out the "build:" line below
 #      - Uncomment the "image:" line that uses :dev
+#
+# Also available on releases:
+#   ghcr.io/notfixingit3/wafflerace:latest
+#   ghcr.io/notfixingit3/wafflerace:<version>
 #
 # The labels below tell your external Traefik how to route to the app.
 # Customize the Host rule for your local/staging domain.

@@ -18,6 +18,10 @@ version: "3.8"
 #   - Pin a specific version in production instead of using :latest
 #   - Example: ghcr.io/notfixingit3/wafflerace:v0.1.12
 #
+# Also available:
+#   ghcr.io/notfixingit3/wafflerace:dev       (bleeding edge from dev branch)
+#   ghcr.io/notfixingit3/wafflerace:sha-xxxx  (exact commit pinning)
+#
 # Example usage:
 #   docker compose -f docker-compose.prod.yml up -d
 #
