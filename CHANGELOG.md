@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.12] - 2026-??-??
 
+**This is an infrastructure and sustainability focused release.** The core racing experience remains stable, while the project has received major improvements in containerization, deployment model, release process, and documentation.
+
 ### Added
 - Docker images are now first-class citizens:
   - Official images published to GHCR on every release (`ghcr.io/notfixingit3/wafflerace`).

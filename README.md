@@ -46,15 +46,15 @@ This is a companion project to [Project Syrup](https://github.com/notfixingit3/w
 
 **v0.1.12 (In Progress)** — Infrastructure & Sustainability Release
 
-This release focuses on making Wafflerace easier to run and maintain long-term:
+This release is focused on making Wafflerace easier to run, deploy, and maintain:
 
-- Docker images are now properly published to GHCR on every release (multi-arch: amd64 + arm64) with provenance, SBOM, and attestations.
-- A `:dev` image is automatically published on pushes to the development branch for easy testing of the latest changes.
-- Removed the previously bundled Traefik + CrowdSec stack. The compose files are now lightweight and designed to work with your existing reverse proxy setup.
-- Release process is now strictly enforced — all version tags must come from the `dev` branch.
-- Significant improvements to documentation and release tooling.
+- First-class Docker support: Official multi-arch images (amd64 + arm64) are now published to GHCR on every release, complete with provenance, SBOM, and attestations.
+- A rolling `:dev` image is published automatically on pushes to the development branch.
+- Simplified deployment model: The compose files no longer bundle Traefik or CrowdSec. They now provide only the application plus the labels needed for an existing reverse proxy.
+- Significantly hardened release process: All version tags must come from the `dev` branch (enforced in CI).
+- Improved documentation and release tooling.
 
-See the [changelog](CHANGELOG.md) for full details.
+See the [changelog](CHANGELOG.md) for the full list of changes.
 
 **v0.1.9** — Major asset milestone
 
@@ -89,42 +89,39 @@ Wafflerace uses high-quality AI-generated boat sprites and layered river backgro
 
 ## Deployment
 
-Wafflerace is designed to run behind an **existing Traefik** reverse proxy (and optionally behind CrowdSec for protection). We no longer include a bundled reverse proxy or security stack.
+Wafflerace is designed to run behind an **existing Traefik** reverse proxy (and optionally behind CrowdSec). We no longer bundle a reverse proxy or security layer.
 
-The provided compose files contain **only the Wafflerace application** plus the minimal Traefik labels it needs.
+The compose files now contain **only the application** plus the Traefik labels it needs.
 
 ### Assumptions
-- You already have Traefik running with an external Docker network (usually named `proxy`).
-- If you use CrowdSec, you have a middleware (commonly `crowdsec@file`) already configured in your Traefik.
-
-### Docker Images
-
-Images are published to GitHub Container Registry:
-
-- Releases: `ghcr.io/notfixingit3/wafflerace:<version>` and `:latest`
-- Development: `ghcr.io/notfixingit3/wafflerace:dev`
-
-See the **Docker Images** section above and the comments inside the compose files for usage examples.
+- You already have Traefik running (with an external Docker network, usually called `proxy`).
+- If you use CrowdSec, you have already configured a middleware (commonly `crowdsec@file`).
 
 ### Quick Start
 
-**Simple local development (no reverse proxy):**
+**Easiest option — no reverse proxy:**
 
 ```bash
 docker compose up -d --build
 ```
 
-Then visit `http://localhost:9090`.
+Visit `http://localhost:9090`.
 
-**Using with your own Traefik:**
+**Using your own Traefik:**
 
-Edit the labels in `docker-compose.dev.yml` or `docker-compose.prod.yml` to match your domain, then run:
+1. Make sure the `proxy` network exists:
+   ```bash
+   docker network create proxy
+   ```
 
-```bash
-docker compose -f docker-compose.prod.yml up -d
-```
+2. Edit the labels in `docker-compose.dev.yml` (development) or `docker-compose.prod.yml` (production) with your domain.
 
-Full examples and label documentation live inside the compose files themselves.
+3. Start the app:
+   ```bash
+   docker compose -f docker-compose.prod.yml up -d
+   ```
+
+See the comments inside the compose files for full label examples and the **Docker Images** section above for available image tags.
 
 ---
 
