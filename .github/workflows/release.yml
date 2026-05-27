@@ -38,7 +38,11 @@ jobs:
         run: bun run build:css
 
       - name: Generate Templ
-        run: go install github.com/a-h/templ/cmd/templ@latest && templ generate
+        run: |
+          go install github.com/a-h/templ/cmd/templ@latest
+          go install golang.org/x/tools/cmd/goimports@latest
+          templ generate
+          goimports -w internal/templates/
 
       - name: Build binary
         run: CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o wafflerace ./cmd/server
