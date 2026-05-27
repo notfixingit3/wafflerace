@@ -1,0 +1,90 @@
+package pages
+
+import (
+	"fmt"
+	"time"
+
+	"github.com/notfixingit3/wafflerace/internal/db"
+	"github.com/notfixingit3/wafflerace/internal/templates"
+)
+
+templ History(results []db.RaceResult) {
+	@templates.Layout("Race History & Analytics") {
+		<div class="max-w-6xl mx-auto p-6">
+			<div class="flex justify-between items-center mb-6">
+				<h1 class="text-3xl font-bold">Race History & Analytics</h1>
+				<a href="/" class="btn btn-primary">New Race</a>
+			</div>
+
+			<!-- Stats Cards -->
+			<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+				<div class="stat bg-base-100 shadow">
+					<div class="stat-title">Total Races</div>
+					<div class="stat-value">{ fmt.Sprintf("%d", len(results)) }</div>
+				</div>
+				<div class="stat bg-base-100 shadow">
+					<div class="stat-title">Avg Duration</div>
+					<div class="stat-value">
+						{ func() string {
+							if len(results) == 0 { return "0s" }
+							total := 0
+							for _, r := range results {
+								total += r.Duration
+							}
+							avg := total / len(results)
+							return fmt.Sprintf("%ds", avg)
+						}() }
+					</div>
+				</div>
+				<div class="stat bg-base-100 shadow">
+					<div class="stat-title">Most Recent</div>
+					<div class="stat-value text-lg">
+						{ func() string {
+							if len(results) == 0 { return "—" }
+							return results[0].WinnerName
+						}() }
+					</div>
+				</div>
+			</div>
+
+			<div class="card bg-base-100 shadow-xl">
+				<div class="card-body">
+					<h2 class="card-title mb-4">All Races</h2>
+
+					<div class="overflow-x-auto">
+						<table class="table table-zebra w-full">
+							<thead>
+								<tr>
+									<th>Date</th>
+									<th>Winner</th>
+									<th>Duration</th>
+									<th>Participants</th>
+								</tr>
+							</thead>
+							<tbody>
+								for _, r := range results {
+									<tr>
+										<td>{ r.FinishedAt.Format("Jan 2, 2006 3:04 PM") }</td>
+										<td class="font-semibold">{ r.WinnerName }</td>
+										<td>{ fmt.Sprintf("%ds", r.Duration) }</td>
+										<td>—</td> <!-- We can enhance later with participant count -->
+									</tr>
+								}
+							</tbody>
+						</table>
+					</div>
+
+					if len(results) == 0 {
+						<div class="text-center py-8 text-base-content/60">
+							No races yet. Go run one!
+						</div>
+					}
+				</div>
+			</div>
+
+			<div class="mt-4 text-center">
+				<a href="/" class="btn btn-ghost">← Back to Setup</a>
+			</div>
+		</div>
+	}
+}

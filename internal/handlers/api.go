@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"net/http"
+	"sort"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 
@@ -36,15 +38,74 @@ func CreateRaceAPI(c *gin.Context) {
 	c.JSON(http.StatusCreated, CreateRaceResponse{ID: id})
 }
 
-// GetHistoryAPI returns recent race results
+// GetHistoryAPI returns recent race results with optional limit
 func GetHistoryAPI(c *gin.Context) {
-	results, err := db.GetRecentResults(20)
+	limit := 50
+	if l := c.Query("limit"); l != "" {
+		if parsed, err := strconv.Atoi(l); err == nil && parsed > 0 && parsed <= 200 {
+			limit = parsed
+		}
+	}
+
+	results, err := db.GetRecentResults(limit)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch history"})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"results": results})
+}
+
+// GetStatsAPI returns basic analytics
+func GetStatsAPI(c *gin.Context) {
+	results, err := db.GetRecentResults(1000) // get a lot for stats
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch stats"})
+		return
+	}
+
+	totalRaces := len(results)
+	if totalRaces == 0 {
+		c.JSON(http.StatusOK, gin.H{
+			"total_races": 0,
+			"avg_duration": 0,
+			"top_winners": []interface{}{},
+		})
+		return
+	}
+
+	var totalDuration int
+	winnerCount := make(map[string]int)
+
+	for _, r := range results {
+		totalDuration += r.Duration
+		winnerCount[r.WinnerName]++
+	}
+
+	avgDuration := float64(totalDuration) / float64(totalRaces)
+
+	// Top 5 winners
+	type winnerStat struct {
+		Name  string `json:"name"`
+		Count int    `json:"count"`
+	}
+	var topWinners []winnerStat
+	for name, count := range winnerCount {
+		topWinners = append(topWinners, winnerStat{Name: name, Count: count})
+	}
+	// Sort by count desc
+	sort.Slice(topWinners, func(i, j int) bool {
+		return topWinners[i].Count > topWinners[j].Count
+	})
+	if len(topWinners) > 5 {
+		topWinners = topWinners[:5]
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"total_races":  totalRaces,
+		"avg_duration": avgDuration,
+		"top_winners":  topWinners,
+	})
 }
 
 // SaveResultRequest is used when a race finishes

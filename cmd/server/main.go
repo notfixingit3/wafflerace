@@ -40,11 +40,15 @@ func main() {
 	router.POST("/race", handlers.StartRace)
 	router.GET("/race", handlers.ShowRace)
 
+	// History & Analytics
+	router.GET("/history", handlers.ShowHistory)
+
 	// API v1 (new backend-driven flow for better scalability)
 	api := router.Group("/api")
 	{
 		api.POST("/races", handlers.CreateRaceAPI)
 		api.GET("/history", handlers.GetHistoryAPI)
+		api.GET("/stats", handlers.GetStatsAPI)
 		api.POST("/results", handlers.SaveResultAPI)
 	}
 

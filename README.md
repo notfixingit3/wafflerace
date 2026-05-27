@@ -40,7 +40,7 @@ This is a companion project to [Project Syrup](https://github.com/notfixingit3/w
 
 ## Current Status
 
-**v0.1.7** — Major feature expansion and foundation hardening:
+**v0.1.8** — Stronger History & Analytics, comprehensive testing foundation, better error handling, frontend architecture improvements, and platform features.
 - Full backend persistence with SQLite (races, history, saved lists)
 - Spectator mode + public race links
 - Live "Current Leaders" sidebar
@@ -55,17 +55,15 @@ Wafflerace now uses high-quality AI-generated boat sprites and river backgrounds
 
 ### Key Features (v0.1.7)
 
-- Backend persistence with SQLite (races, participants, results, saved name lists)
-- Public race links + Spectator mode (view-only)
-- Live "Current Leaders" sidebar during race
-- Race templates and quick starts
-- "I need to pee" pause button + Run Again workflow
-- Name display options + Hide Controls
-- Race history with better UI
-- Parallax backgrounds, particles, synthesized audio
-- Strong visual clamping for maximum suspense
-- Frontend testing foundation with Vitest
-- Improved error handling and code quality (ESLint/Prettier)
+- Much stronger History & Analytics view (stats, searchable table, recent races)
+- Dedicated /history page with analytics
+- Comprehensive frontend testing foundation (Vitest + tests for core logic)
+- Improved error handling and resilience
+- Further frontend architecture cleanup (extracted race-logic.js)
+- Basic management surface via History
+- All previous features (Spectator mode, Live leaders, "I need to pee", templates, etc.)
+- ESLint + Prettier enforced
+- Backend API improvements for future webhooks and integrations
 - 50 unique right-facing AI boat sprites with subtle rocking and reactive name flags
 - Parallax scrolling backgrounds (3 layers at different speeds, randomly selected each race)
 - Synthesized audio: gentle water drone, splashes on big surges, and a win chime
