@@ -23,7 +23,8 @@ jobs:
 
       - name: Validate release must come from dev
         run: |
-          if ! git branch -r --contains ${{ github.sha }} | grep -q 'origin/dev'; then
+          git fetch --no-tags origin dev:refs/remotes/origin/dev
+          if ! git merge-base --is-ancestor "${{ github.sha }}" origin/dev; then
             echo "::error::Release tags are only allowed from the 'dev' branch."
             echo "The commit this tag (${{ github.ref_name }}) points to does not exist on origin/dev."
             echo ""
@@ -57,13 +58,34 @@ jobs:
 
       - name: Generate Templ
         run: |
-          go install github.com/a-h/templ/cmd/templ@latest
+          go install github.com/a-h/templ/cmd/templ@v0.3.1020
           go install golang.org/x/tools/cmd/goimports@latest
           templ generate
           goimports -w internal/templates/
 
+      - name: Lint frontend
+        run: bun run lint
+
+      - name: Test frontend
+        run: bun run test
+
+      - name: Test Go
+        run: go test ./...
+
+      - name: Security scan Go
+        run: |
+          go install github.com/securego/gosec/v2/cmd/gosec@latest
+          gosec ./...
+
       - name: Build binary
         run: CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o wafflerace ./cmd/server
+
+      - name: Package release archive
+        run: |
+          mkdir -p "dist/wafflerace-${{ github.ref_name }}-linux-amd64"
+          cp wafflerace "dist/wafflerace-${{ github.ref_name }}-linux-amd64/"
+          cp -R web assets README.md "dist/wafflerace-${{ github.ref_name }}-linux-amd64/"
+          tar -C dist -czf "wafflerace-${{ github.ref_name }}-linux-amd64.tar.gz" "wafflerace-${{ github.ref_name }}-linux-amd64"
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
@@ -71,7 +93,7 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            wafflerace
+            wafflerace-${{ github.ref_name }}-linux-amd64.tar.gz
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -112,4 +134,3 @@ jobs:
           cache-to: type=gha,mode=max
           provenance: true
           sbom: true
-          attestations: true

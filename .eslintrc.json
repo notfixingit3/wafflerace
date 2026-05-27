@@ -12,6 +12,19 @@
     "no-unused-vars": "warn",
     "no-console": "off"
   },
+  "overrides": [
+    {
+      "files": ["**/*.test.js"],
+      "globals": {
+        "beforeEach": "readonly",
+        "describe": "readonly",
+        "expect": "readonly",
+        "global": "readonly",
+        "it": "readonly",
+        "vi": "readonly"
+      }
+    }
+  ],
   "globals": {
     "window": "readonly",
     "document": "readonly"

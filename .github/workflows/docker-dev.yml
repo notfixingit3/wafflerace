@@ -20,7 +20,53 @@ on:
 # and publishes :latest + :vX.Y.Z images.
 
 jobs:
+  verify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+
+      - name: Download Go modules
+        run: go mod download
+
+      - name: Set up Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build CSS
+        run: bun run build:css
+
+      - name: Lint frontend
+        run: bun run lint
+
+      - name: Test frontend
+        run: bun run test
+
+      - name: Test Go
+        run: go test ./...
+
+      - name: Security scan Go
+        run: |
+          go install github.com/securego/gosec/v2/cmd/gosec@latest
+          gosec ./...
+
   build-dev-image:
+    needs: verify
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -64,4 +110,3 @@ jobs:
           cache-to: type=gha,mode=max
           provenance: true
           sbom: true
-          attestations: true

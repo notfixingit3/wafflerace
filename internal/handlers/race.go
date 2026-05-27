@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 
@@ -40,16 +41,20 @@ func StartRace(c *gin.Context) {
 	}
 
 	if len(names) > 50 {
-		names = names[:50]
+		c.String(http.StatusBadRequest, "Maximum 50 participants allowed")
+		return
 	}
 
 	duration := 25
-	if d, err := strconv.Atoi(durationStr); err == nil && d >= 10 {
+	if d, err := strconv.Atoi(durationStr); err == nil && d >= 10 && d <= 300 {
 		duration = d
 	}
 
 	// Redirect to race view with data in query (simple for now)
-	c.Redirect(http.StatusFound, "/race?names="+strings.Join(names, ",")+"&duration="+strconv.Itoa(duration))
+	query := url.Values{}
+	query.Set("names", strings.Join(names, ","))
+	query.Set("duration", strconv.Itoa(duration))
+	c.Redirect(http.StatusFound, "/race?"+query.Encode())
 }
 
 func ShowRace(c *gin.Context) {
@@ -65,7 +70,7 @@ func ShowRace(c *gin.Context) {
 	}
 
 	duration := 25
-	if d, err := strconv.Atoi(durationStr); err == nil {
+	if d, err := strconv.Atoi(durationStr); err == nil && d >= 10 && d <= 300 {
 		duration = d
 	}
 

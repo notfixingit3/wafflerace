@@ -1,5 +1,7 @@
 # Binaries
 bin/
+/server
+/wafflerace
 *.exe
 *.exe~
 *.dll
@@ -15,6 +17,10 @@ go.work.sum
 
 # Output of the go coverage tool
 *.out
+
+# Runtime data
+/data/
+/internal/db/data/
 
 # Dependency directories
 vendor/
@@ -49,6 +55,10 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Test/browser reports
+/playwright-report/
+/test-results/
 
 # Temporary files
 tmp/

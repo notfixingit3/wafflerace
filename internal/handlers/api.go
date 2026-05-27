@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"sort"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 
@@ -29,7 +30,18 @@ func CreateRaceAPI(c *gin.Context) {
 		return
 	}
 
-	id, err := db.CreateRace(req.Duration, req.Names)
+	names := make([]string, 0, len(req.Names))
+	for _, rawName := range req.Names {
+		if name := strings.TrimSpace(rawName); name != "" {
+			names = append(names, name)
+		}
+	}
+	if len(names) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "at least one participant name is required"})
+		return
+	}
+
+	id, err := db.CreateRace(req.Duration, names)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create race"})
 		return
@@ -67,9 +79,9 @@ func GetStatsAPI(c *gin.Context) {
 	totalRaces := len(results)
 	if totalRaces == 0 {
 		c.JSON(http.StatusOK, gin.H{
-			"total_races": 0,
+			"total_races":  0,
 			"avg_duration": 0,
-			"top_winners": []interface{}{},
+			"top_winners":  []interface{}{},
 		})
 		return
 	}
@@ -122,7 +134,14 @@ func SaveResultAPI(c *gin.Context) {
 		return
 	}
 
-	if err := db.SaveResult(req.RaceID, req.WinnerName); err != nil {
+	raceID := strings.TrimSpace(req.RaceID)
+	winnerName := strings.TrimSpace(req.WinnerName)
+	if raceID == "" || winnerName == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "race_id and winner_name are required"})
+		return
+	}
+
+	if err := db.SaveResult(raceID, winnerName); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to save result"})
 		return
 	}

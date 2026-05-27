@@ -65,7 +65,7 @@ func SetupTestDBForHandlers(t *testing.T) func() {
 
 	return func() {
 		if testDB != nil {
-			testDB.Close()
+			require.NoError(t, testDB.Close())
 		}
 		DB = originalDB
 	}

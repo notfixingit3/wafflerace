@@ -51,7 +51,6 @@ describe('calculateTargetSpeed', () => {
   })
 
   it('applies stronger multipliers in final phase', () => {
-    const normal = calculateTargetSpeed(10, 10, 0.5, 0)
     const final = calculateTargetSpeed(10, 10, 0.9, 0)
     // Not deterministic due to random, but we can check it tends higher
     expect(final).toBeGreaterThanOrEqual(1)

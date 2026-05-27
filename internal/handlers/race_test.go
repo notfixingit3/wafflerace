@@ -60,6 +60,33 @@ func TestStartRace(t *testing.T) {
 	}
 }
 
+func TestStartRaceRedirectEscapesNames(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	router := gin.New()
+	router.POST("/race", StartRace)
+
+	w := httptest.NewRecorder()
+
+	form := url.Values{}
+	form.Set("names", "O'Brien\nJean-Luc\nMüller")
+	form.Set("duration", "45")
+
+	req := httptest.NewRequest("POST", "/race", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusFound, w.Code)
+
+	location := w.Header().Get("Location")
+	parsed, err := url.Parse(location)
+	require.NoError(t, err)
+	assert.Equal(t, "/race", parsed.Path)
+	assert.Equal(t, "O'Brien,Jean-Luc,Müller", parsed.Query().Get("names"))
+	assert.Equal(t, "45", parsed.Query().Get("duration"))
+}
+
 func TestShowRace(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
@@ -93,12 +120,43 @@ func TestCreateRaceAPI_Validation(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
+func TestCreateRaceAPI_RejectsWhitespaceOnlyNames(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+
+	body := `{"names": [" ", "\t"], "duration": 45}`
+	req := httptest.NewRequest("POST", "/api/races", strings.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	c.Request = req
+
+	CreateRaceAPI(c)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
 func TestSaveResultAPI_Validation(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 	saveBody := `{"race_id": "", "winner_name": "Alice"}`
+	req := httptest.NewRequest("POST", "/api/results", strings.NewReader(saveBody))
+	req.Header.Set("Content-Type", "application/json")
+	c.Request = req
+
+	SaveResultAPI(c)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestSaveResultAPI_RejectsWhitespaceFields(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	saveBody := `{"race_id": " ", "winner_name": "\t"}`
 	req := httptest.NewRequest("POST", "/api/results", strings.NewReader(saveBody))
 	req.Header.Set("Content-Type", "application/json")
 	c.Request = req

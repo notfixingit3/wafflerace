@@ -26,6 +26,23 @@
   const VISUAL_CLAMP_RELEASE = 0.92;
   const VISUAL_MAX_DURING_CLAMP = 0.81;
 
+  function calculateVisualProgress(logicalProgress, progress) {
+    let visProg = logicalProgress;
+
+    if (progress > VISUAL_CLAMP_START) {
+      if (progress < VISUAL_CLAMP_RELEASE) {
+        visProg = Math.min(logicalProgress, VISUAL_MAX_DURING_CLAMP);
+      } else {
+        const releaseT =
+          (progress - VISUAL_CLAMP_RELEASE) / (1 - VISUAL_CLAMP_RELEASE);
+        const maxVis = VISUAL_MAX_DURING_CLAMP + releaseT * 0.19;
+        visProg = Math.min(logicalProgress, maxVis);
+      }
+    }
+
+    return Math.max(0, Math.min(1, visProg));
+  }
+
   // Jitter behavior
   const BASE_JITTER_INTERVAL = 90;
   const FINAL_PHASE_JITTER_MULTIPLIER = 0.6; // more frequent in final phase
@@ -85,7 +102,6 @@
 
   // === Background images for parallax layers ===
   const bgImages = [];
-  let bgsLoaded = 0;
 
   function preloadBackgrounds() {
     const collection = window.RACE_BACKGROUND_COLLECTION || 'default';
@@ -96,10 +112,6 @@
 
       // Prefer WebP for better performance/size
       img.src = `/assets/backgrounds/collections/${collection}/webp/${base}.webp`;
-
-      img.onload = () => {
-        bgsLoaded++;
-      };
 
       img.onerror = () => {
         // Fallback to JPG; if that also fails this slot stays empty (we filter later)
@@ -401,6 +413,11 @@
     ctx.restore();
   }
 
+  function formatDisplayName(name, maxLength = 18, trimLength = 15) {
+    const text = String(name || '');
+    return text.length > maxLength ? text.slice(0, trimLength) + '...' : text;
+  }
+
   function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -435,7 +452,7 @@
 
     // === Parallax Background Layers (far → near) ===
     if (startTime && parallaxLayers.length === 3) {
-      parallaxLayers.forEach((layer, idx) => {
+      parallaxLayers.forEach((layer) => {
         if (!layer.img || !layer.img.complete) return;
         const speed = layer.speed;
         const offset =
@@ -492,9 +509,7 @@
       const bob = Math.sin(w.phase) * 2.5;
 
       const logicalProgress = (w.x - START_X) / (FINISH_LINE - START_X);
-      let visProg = (typeof calculateVisualProgress === 'function')
-        ? calculateVisualProgress(logicalProgress, progress)
-        : logicalProgress;
+      const visProg = calculateVisualProgress(logicalProgress, progress);
 
       const visualX =
         START_X + (FINISH_LINE - START_X) * Math.max(0, Math.min(1, visProg));
@@ -517,9 +532,9 @@
     sorted.forEach((w, i) => {
       const div = document.createElement('div');
       div.className = 'flex justify-between text-xs';
-      div.innerHTML = `
-        <span>${i + 1}. ${w.name.length > 18 ? w.name.slice(0, 15) + '...' : w.name}</span>
-      `;
+      const name = document.createElement('span');
+      name.textContent = `${i + 1}. ${formatDisplayName(w.name)}`;
+      div.appendChild(name);
       list.appendChild(div);
     });
 
@@ -542,12 +557,8 @@
     }
     lastTime = now;
 
-    let allFinished = true;
-
     waffles.forEach((w) => {
       if (w.finished) return;
-
-      allFinished = false;
 
       // === Very strong, noticeable jitter for chaotic racing ===
       const isFinalPhase = progress > 0.82;
@@ -697,13 +708,27 @@
               : 'bg-base-200 border border-base-300'
           }`;
 
-          div.innerHTML = `
-            <div class="flex items-center gap-4">
-              <span class="text-4xl">${medal}</span>
-              <span class="font-semibold">${r.name}</span>
-            </div>
-            ${isWinner ? '<span class="text-sm font-bold text-yellow-600">WINNER</span>' : ''}
-          `;
+          const details = document.createElement('div');
+          details.className = 'flex items-center gap-4';
+
+          const medalEl = document.createElement('span');
+          medalEl.className = 'text-4xl';
+          medalEl.textContent = medal;
+
+          const nameEl = document.createElement('span');
+          nameEl.className = 'font-semibold';
+          nameEl.textContent = r.name;
+
+          details.append(medalEl, nameEl);
+          div.appendChild(details);
+
+          if (isWinner) {
+            const winnerBadge = document.createElement('span');
+            winnerBadge.className = 'text-sm font-bold text-yellow-600';
+            winnerBadge.textContent = 'WINNER';
+            div.appendChild(winnerBadge);
+          }
+
           podiumList.appendChild(div);
         });
 
@@ -725,10 +750,16 @@
           const div = document.createElement('div');
           div.className =
             'flex items-center gap-3 bg-base-200 px-4 py-2.5 rounded-xl text-sm';
-          div.innerHTML = `
-            <div class="badge badge-ghost badge-sm w-7 justify-center font-mono">${index + 1}</div>
-            <span class="font-medium">${r.name}</span>
-          `;
+
+          const rank = document.createElement('div');
+          rank.className = 'badge badge-ghost badge-sm w-7 justify-center font-mono';
+          rank.textContent = String(index + 1);
+
+          const name = document.createElement('span');
+          name.className = 'font-medium';
+          name.textContent = r.name;
+
+          div.append(rank, name);
           restContainer.appendChild(div);
         });
 
@@ -754,7 +785,6 @@
     if (!results || results.length === 0) return;
     const winner = results[0].name;
     navigator.clipboard.writeText(winner).then(() => {
-      const originalText = event?.target?.innerText || '';
       // Simple feedback
       const btns = document.querySelectorAll('button');
       btns.forEach((b) => {
@@ -809,8 +839,6 @@
       });
     }
   }
-
-  let timerInterval = null;
 
   function updateTimer() {
     if (!startTime || finished) return;
@@ -924,8 +952,14 @@
       });
       const trimmed = history.slice(0, 10);
       localStorage.setItem('wafflerace_history', JSON.stringify(trimmed));
-    } catch (e) {}
+    } catch (e) {
+      console.warn('[Wafflerace] Unable to save local history:', e);
+    }
   }
+
+  window.copyWinner = copyWinner;
+  window.copyFullResults = copyFullResults;
+  window.setNameDisplay = setNameDisplay;
 
   function showRaceHistory() {
     const section = document.getElementById('history-section');
@@ -947,13 +981,22 @@
         div.className =
           'bg-base-200 px-3 py-2 rounded-lg text-sm flex justify-between items-center';
         const date = new Date(entry.timestamp).toLocaleString();
-        div.innerHTML = `
-          <div>
-            <span class="font-medium">${entry.winner}</span>
-            <span class="text-base-content/60 ml-2">• ${entry.participantCount} participants • ${entry.duration}s</span>
-          </div>
-          <div class="text-xs text-base-content/60">${date}</div>
-        `;
+
+        const summary = document.createElement('div');
+        const winner = document.createElement('span');
+        winner.className = 'font-medium';
+        winner.textContent = entry.winner;
+
+        const meta = document.createElement('span');
+        meta.className = 'text-base-content/60 ml-2';
+        meta.textContent = `• ${entry.participantCount} participants • ${entry.duration}s`;
+
+        const dateEl = document.createElement('div');
+        dateEl.className = 'text-xs text-base-content/60';
+        dateEl.textContent = date;
+
+        summary.append(winner, meta);
+        div.append(summary, dateEl);
         list.appendChild(div);
       });
       section.classList.remove('hidden');

@@ -109,7 +109,9 @@ func GetSavedLists() ([]SavedList, error) {
 		if err := rows.Scan(&l.ID, &l.Name, &namesJSON, &l.CreatedAt); err != nil {
 			return nil, err
 		}
-		json.Unmarshal([]byte(namesJSON), &l.Names)
+		if err := json.Unmarshal([]byte(namesJSON), &l.Names); err != nil {
+			return nil, err
+		}
 		lists = append(lists, l)
 	}
 	return lists, nil

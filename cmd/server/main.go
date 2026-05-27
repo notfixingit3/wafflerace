@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 
@@ -52,13 +53,24 @@ func main() {
 		api.POST("/results", handlers.SaveResultAPI)
 	}
 
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "9090"
-	}
+	port := resolvePort()
 
 	log.Printf("Wafflerace starting on port %s", port)
 	if err := router.Run(":" + port); err != nil {
 		log.Fatal("Failed to start server:", err)
 	}
+}
+
+func resolvePort() string {
+	port := os.Getenv("PORT")
+	if port == "" {
+		return "9090"
+	}
+
+	parsed, err := strconv.Atoi(port)
+	if err != nil || parsed < 1 || parsed > 65535 {
+		log.Fatal("Invalid PORT: must be an integer from 1 to 65535")
+	}
+
+	return strconv.Itoa(parsed)
 }
