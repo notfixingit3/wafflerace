@@ -709,6 +709,11 @@ import {
   window.copyWinner = copyWinner;
   window.copyFullResults = copyFullResults;
   window.setNameDisplay = setNameDisplay;
+  window.RACE_ASSETS = { boatImages, bgImages };
+  window.RACE_STATE = {
+    get waffles() { return waffles; },
+    get parallaxLayers() { return parallaxLayers; }
+  };
 
   function showRaceHistory() {
     const section = document.getElementById('history-section');
