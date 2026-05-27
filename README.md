@@ -40,17 +40,32 @@ This is a companion project to [Project Syrup](https://github.com/notfixingit3/w
 
 ## Current Status
 
-**v0.1.6** — Backend persistence with SQLite + major architecture improvements for long-term scalability.
+**v0.1.7** — Major feature expansion and foundation hardening:
+- Full backend persistence with SQLite (races, history, saved lists)
+- Spectator mode + public race links
+- Live "Current Leaders" sidebar
+- Race templates / quick starts
+- Significantly improved history and results UI
+- Better error handling across the app
+- Frontend testing foundation (Vitest)
+- Extracted race logic for maintainability
+- ESLint + Prettier enforced
 
 Wafflerace now uses high-quality AI-generated boat sprites and river backgrounds instead of programmer art. The race emphasizes maximum suspense: boats move with chaotic, variable speeds, but no one visually reaches the finish line until the very final seconds.
 
-### Key Features (v0.1.6)
+### Key Features (v0.1.7)
 
-**Major architectural improvement**: Backend persistence with SQLite. Race results and history are now stored server-side, enabling multi-device access and better scalability for larger user bases.
-
-- Full backend-driven race lifecycle (create race → run → save results)
-- SQLite persistence for races and history
-- All previous v0.1.5 features (parallax, audio, particles, "I need to pee" button, etc.)
+- Backend persistence with SQLite (races, participants, results, saved name lists)
+- Public race links + Spectator mode (view-only)
+- Live "Current Leaders" sidebar during race
+- Race templates and quick starts
+- "I need to pee" pause button + Run Again workflow
+- Name display options + Hide Controls
+- Race history with better UI
+- Parallax backgrounds, particles, synthesized audio
+- Strong visual clamping for maximum suspense
+- Frontend testing foundation with Vitest
+- Improved error handling and code quality (ESLint/Prettier)
 - 50 unique right-facing AI boat sprites with subtle rocking and reactive name flags
 - Parallax scrolling backgrounds (3 layers at different speeds, randomly selected each race)
 - Synthesized audio: gentle water drone, splashes on big surges, and a win chime

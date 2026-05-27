@@ -6,12 +6,16 @@
     "watch:css": "tailwindcss -i ./web/input.css -o ./web/static/css/app.css --watch",
     "lint": "eslint web/static/js --ext .js",
     "lint:fix": "eslint web/static/js --ext .js --fix",
-    "format": "prettier --write \"web/static/js/**/*.js\""
+    "format": "prettier --write \"web/static/js/**/*.js\"",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "devDependencies": {
     "tailwindcss": "^3.4.17",
     "daisyui": "^4.12.23",
     "eslint": "^8.57.0",
-    "prettier": "^3.3.3"
+    "prettier": "^3.3.3",
+    "vitest": "^1.6.0",
+    "jsdom": "^24.1.0"
   }
 }

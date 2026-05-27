@@ -431,23 +431,38 @@
       const bob = Math.sin(w.phase) * 2.5;
 
       const logicalProgress = (w.x - START_X) / (FINISH_LINE - START_X);
-      let visProg = logicalProgress;
-
-      if (progress > VISUAL_CLAMP_START) {
-        if (progress < VISUAL_CLAMP_RELEASE) {
-          visProg = Math.min(logicalProgress, VISUAL_MAX_DURING_CLAMP);
-        } else {
-          const releaseT =
-            (progress - VISUAL_CLAMP_RELEASE) / (1 - VISUAL_CLAMP_RELEASE);
-          const maxVis = VISUAL_MAX_DURING_CLAMP + releaseT * 0.19;
-          visProg = Math.min(logicalProgress, maxVis);
-        }
-      }
+      let visProg = (typeof calculateVisualProgress === 'function')
+        ? calculateVisualProgress(logicalProgress, progress)
+        : logicalProgress;
 
       const visualX =
         START_X + (FINISH_LINE - START_X) * Math.max(0, Math.min(1, visProg));
       drawBoat(ctx, visualX, w.y, bob, w.name, w.spriteIndex, w.tilt);
     });
+
+    // Update live leaderboard (item 8)
+    updateLiveLeaderboard();
+  }
+
+  function updateLiveLeaderboard() {
+    const container = document.getElementById('live-leaderboard');
+    const list = document.getElementById('live-leaders-list');
+    if (!container || !list || !startTime || finished) return;
+
+    // Sort by current visual position (or logical for accuracy during race)
+    const sorted = [...waffles].sort((a, b) => b.x - a.x).slice(0, 3);
+
+    list.innerHTML = '';
+    sorted.forEach((w, i) => {
+      const div = document.createElement('div');
+      div.className = 'flex justify-between text-xs';
+      div.innerHTML = `
+        <span>${i + 1}. ${w.name.length > 18 ? w.name.slice(0, 15) + '...' : w.name}</span>
+      `;
+      list.appendChild(div);
+    });
+
+    container.classList.remove('hidden');
   }
 
   function update() {
@@ -863,6 +878,19 @@
     const runAgainBtn = document.getElementById('run-again-btn');
     if (runAgainBtn) {
       runAgainBtn.addEventListener('click', runAgainWithSameNames);
+    }
+
+    // Spectator mode - hide controls and start button
+    if (window.IS_SPECTATOR) {
+      const startBtn = document.getElementById('start-btn');
+      const peeBtn = document.getElementById('pee-btn');
+      const controls = document.getElementById('race-controls');
+      const nameOptions = document.getElementById('name-options');
+
+      if (startBtn) startBtn.style.display = 'none';
+      if (peeBtn) peeBtn.style.display = 'none';
+      if (controls) controls.style.display = 'none';
+      if (nameOptions) nameOptions.style.display = 'none';
     }
 
     // Fullscreen button

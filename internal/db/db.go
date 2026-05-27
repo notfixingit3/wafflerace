@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"encoding/json"
 	"log"
 	"os"
 	"path/filepath"
@@ -59,10 +60,59 @@ func migrate() error {
 	);
 
 	CREATE INDEX IF NOT EXISTS idx_race_results_finished_at ON race_results(finished_at DESC);
+
+	CREATE TABLE IF NOT EXISTS saved_name_lists (
+		id TEXT PRIMARY KEY,
+		name TEXT NOT NULL,
+		names TEXT NOT NULL, -- JSON array
+		created_at DATETIME NOT NULL
+	);
 	`
 
 	_, err := DB.Exec(schema)
 	return err
+}
+
+// === Saved Name Lists ===
+
+type SavedList struct {
+	ID        string
+	Name      string
+	Names     []string
+	CreatedAt time.Time
+}
+
+func SaveNameList(name string, names []string) (string, error) {
+	id := "list-" + time.Now().Format("20060102150405")
+	now := time.Now().UTC()
+
+	namesJSON, _ := json.Marshal(names)
+
+	_, err := DB.Exec(
+		"INSERT INTO saved_name_lists (id, name, names, created_at) VALUES (?, ?, ?, ?)",
+		id, name, string(namesJSON), now,
+	)
+	return id, err
+}
+
+func GetSavedLists() ([]SavedList, error) {
+	rows, err := DB.Query("SELECT id, name, names, created_at FROM saved_name_lists ORDER BY created_at DESC LIMIT 50")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var lists []SavedList
+	for rows.Next() {
+		var l SavedList
+		var namesJSON string
+		if err := rows.Scan(&l.ID, &l.Name, &namesJSON, &l.CreatedAt); err != nil {
+			return nil, err
+		}
+		json.Unmarshal([]byte(namesJSON), &l.Names)
+		lists = append(lists, l)
+	}
+	return lists, nil
 }
 
 // Race represents a race session

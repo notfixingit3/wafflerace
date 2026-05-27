@@ -24,6 +24,12 @@ templ Race(names []string, duration int) {
 				</div>
 			</div>
 
+			<!-- Live Top 3 Sidebar -->
+			<div id="live-leaderboard" class="hidden mb-4 max-w-md mx-auto bg-base-200 p-3 rounded-lg text-sm">
+				<div class="font-semibold mb-2">Current Leaders</div>
+				<div id="live-leaders-list" class="space-y-1"></div>
+			</div>
+
 			<div id="race-controls" class="flex gap-3 justify-center items-center flex-wrap">
 				<button id="start-btn" class="btn btn-primary btn-lg">Start Race</button>
 				<button id="pee-btn" class="btn btn-warning btn-lg hidden">I need to pee</button>
@@ -67,7 +73,9 @@ templ Race(names []string, duration int) {
 			// New: Race ID from backend (for persistence)
 			const urlParams = new URLSearchParams(window.location.search);
 			window.RACE_ID = urlParams.get('id') || null;
+			window.IS_SPECTATOR = urlParams.get('spectator') === '1';
 		</script>
+		<script src="/static/js/race-logic.js"></script>
 		<script src="/static/js/race.js"></script>
 	}
 }
