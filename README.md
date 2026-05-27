@@ -97,7 +97,6 @@ Wafflerace now uses high-quality AI-generated boat sprites and river backgrounds
 - Touch-friendly setup screen for tablets
 - Up to 50 participants with smooth 60fps canvas animation
 - Clean results with podium + full field (no times shown)
-- Docker + Traefik + CrowdSec ready for production deployment
 
 See the [changelog](https://github.com/notfixingit3/wafflerace/releases/tag/v0.1.1) for full details.
 
@@ -115,27 +114,31 @@ See the [changelog](https://github.com/notfixingit3/wafflerace/releases/tag/v0.1
 
 ## Deployment
 
-Wafflerace is designed to run behind **Traefik** with automatic Let's Encrypt SSL and protected by **CrowdSec**.
+Wafflerace is designed to work with an **existing Traefik** reverse proxy (and optionally CrowdSec for protection). We no longer bundle Traefik or CrowdSec in the compose files.
 
-Two compose files are provided:
+The provided `docker-compose.dev.yml` and `docker-compose.prod.yml` contain **only the application service** along with the Traefik labels it needs.
 
-| File                        | Purpose              | Recommended For     |
-|----------------------------|----------------------|---------------------|
-| `docker-compose.dev.yml`   | Development          | Local / Staging     |
-| `docker-compose.prod.yml`  | Production           | Live deployments    |
+### Assumptions
+- You already have Traefik running (and an external Docker network, usually called `proxy`).
+- If you use CrowdSec, you have already configured a middleware (commonly `crowdsec@file`) in your Traefik instance.
 
-### Important: Customization Required
+### Quick Start (Simple / Direct Access)
 
-**Before running either compose file, open it and complete the "PREREQUISITES / CUSTOMIZATION CHECKLIST"** located right after the `version:` line at the top.
+```bash
+docker compose up -d --build
+```
 
-This checklist covers:
-- Let's Encrypt email
-- All hostnames / domains
-- CrowdSec bouncer API key
-- External network name (`proxy`)
-- Production image version pinning
+Then visit `http://localhost:9090`.
 
-See [README-dev.md](README-dev.md) for more details.
+### Using with Your Own Traefik
+
+Edit the Traefik labels in `docker-compose.dev.yml` or `docker-compose.prod.yml` to match your domain and setup, then bring up the app:
+
+```bash
+docker compose -f docker-compose.dev.yml up -d --build
+```
+
+Example labels are included in the compose files with clear comments.
 
 ---
 
@@ -163,7 +166,7 @@ docker compose up -d --build
 
 Then visit `http://localhost:9090`.
 
-See [README-dev.md](README-dev.md) for production-style Traefik + CrowdSec setup.
+See the compose files themselves for Traefik label examples when using an external reverse proxy.
 
 #### Asset Conversion Helpers
 
