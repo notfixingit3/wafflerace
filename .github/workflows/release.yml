@@ -7,11 +7,9 @@ on:
 
 jobs:
   build:
-    # Native GitHub branch awareness for tags.
-    # Only runs when the tag was created while on the 'dev' branch.
-    # Note: github.event.base_ref is not 100% reliable in all tag scenarios
-    # (see docs + community reports), but this is the simplest native approach.
-    if: github.event.base_ref == 'refs/heads/dev'
+    # Robust branch check for releases.
+    # We deliberately do NOT rely on github.event.base_ref for tag pushes
+    # because it is unreliable. Instead we do a real git history check.
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -19,6 +17,20 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0   # required for the branch containment check below
+
+      - name: Validate release must come from dev
+        run: |
+          if ! git branch -r --contains ${{ github.sha }} | grep -q 'origin/dev'; then
+            echo "::error::Release tags are only allowed from the 'dev' branch."
+            echo "The commit this tag (${{ github.ref_name }}) points to does not exist on origin/dev."
+            echo ""
+            echo "Branches that contain this commit:"
+            git branch -r --contains ${{ github.sha }} || true
+            exit 1
+          fi
+          echo "✅ Tag commit is on dev — proceeding with release."
 
       - name: Set up Go
         uses: actions/setup-go@v5
