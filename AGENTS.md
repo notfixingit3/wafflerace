@@ -24,6 +24,8 @@ When starting a fresh session:
 - Nature collection: 5/30 generated (first batch committed)
 
 **Key Recent Architectural & Process Changes**
+- Implemented high-production visual 3D-like podium reveal with sequential timing (3rd -> 2nd -> 1st) and winner boat canvas sprite rendering.
+- Created `race-journey.spec.js` Playwright spec covering the full race user journey, SQLite persistence, and spectator mode.
 - Core canvas runner `race.js` fully modularized into ES modules (`race-particles.js`, `race-audio.js`, and logic helpers in `race-logic.js`).
 - Complete test coverage added for waffle initialization, layouts, displays, leaders, and physics simulation.
 - Expanded Vitest coverage with a new unit test suite for the `ParticleSystem`.
@@ -111,12 +113,12 @@ See `assets/boat-concepts/README.md` for strict generation rules (especially "**
 - **Frontend**:
   - Significantly expand Vitest coverage in `race-logic.js` and extract more pure functions from `race.js` (Complete: name display formatting, leaderboard logic, layout spacing, waffle state init, and waffle physics).
   - Add unit tests for `ParticleSystem` in `race-particles.test.js` (Complete).
-  - Add tests for the dramatic results reveal logic.
-  - Consider Playwright or Cypress for critical E2E flows (create race → run → dramatic results + history persistence + collection switching).
-- Add E2E smoke tests for the most important user journeys.
+  - Add tests for the dramatic results reveal logic (Complete).
+  - Consider Playwright or Cypress for critical E2E flows (create race → run → dramatic results + history persistence + collection switching) (Complete).
+- Add E2E smoke tests for the most important user journeys (Complete).
 
 ### UI / UX Improvements
-- Dramatic, high-production **Results Screen + Winner Reveal** (staged animations, better use of boat sprites, confetti/particles, share buttons) — partially implemented in v0.1.8, needs more polish.
+- Dramatic, high-production **Results Screen + Winner Reveal** (staged animations, better use of boat sprites, confetti/particles, share buttons) — (Complete: fully polished with sequential 3D podium layout, winner boat canvas sprite, and timed reveal intervals).
 - Full **Theming Engine** (CSS variables + easy switching between visual themes that work with collections).
 - Much stronger **History & Analytics** dashboard (filters, search, charts, exports, per-user stats if accounts are added).
 - Better **onboarding** and help for first-time users (recommended presets, tooltips, guided setup).

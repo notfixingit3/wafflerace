@@ -10,12 +10,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Interactive, animated visual three-step podium (1st, 2nd, 3rd) on the race results screen with transition classes for dynamic slide-up reveals.
+- Dedicated canvas (`winner-boat-canvas`) on the gold podium step showing a high-production rendering of the winner's boat sprite.
+- Complete E2E journey test suite in `e2e/race-journey.spec.js` covering sequential podium reveals, simulation placement accuracy verification, winner canvas presence, SQLite database history persistence, and spectator mode.
 - Comprehensive unit test suite for `ParticleSystem` in `web/static/js/race-particles.test.js` (7 tests covering particle emission, updates, canvas rendering, and confetti).
 - Table-driven unit tests for backend API handlers (`CreateRaceAPI`, `SaveResultAPI`, `GetHistoryAPI`, `GetStatsAPI`) in `internal/handlers/race_test.go`.
 - Isolated SQLite database helper `SetupTestDBForHandlers` in `internal/db/test_helpers.go` to provide clean in-memory database environments for API handler tests.
 - 13 new Vitest test cases in `web/static/js/race-logic.test.js` covering dynamic layout spacing, display name formatting, leaderboard sorting, average progress, and individual waffle physics updates.
 
 ### Changed
+- Refactored `showResults()` in `web/static/js/race.js` to execute sequential reveals (3rd place -> 2nd place -> 1st place + winner name/announcement/confetti/finish chime) over 600ms timed intervals.
+- Retained the final results card for standings of 4th place and below under "Rest of the Field" to avoid visual redundancy.
+- Updated `runAgainWithSameNames()` in `web/static/js/race.js` to reset the podium styling classes and clear the winner's canvas context for clean consecutive races.
 - Modularized the core canvas runner `race.js` by extracting and refactoring layout, leaderboard sorting, formatting, and waffle position calculations into `race-logic.js` as pure functions.
 - Decoupled `race.js` logic by split-importing modular files `race-audio.js` and `race-particles.js` as ES modules.
 - Optimized canvas update loop performance by calculating average waffle progress once per frame instead of inside the waffle iteration loop.
