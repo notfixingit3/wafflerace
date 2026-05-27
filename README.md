@@ -40,11 +40,17 @@ This is a companion project to [Project Syrup](https://github.com/notfixingit3/w
 
 ## Current Status
 
-**v0.1.1** — Solid foundation with premium AI-generated visuals and audio.
+**v0.1.6** — Backend persistence with SQLite + major architecture improvements for long-term scalability.
 
 Wafflerace now uses high-quality AI-generated boat sprites and river backgrounds instead of programmer art. The race emphasizes maximum suspense: boats move with chaotic, variable speeds, but no one visually reaches the finish line until the very final seconds.
 
-### Key Features (v0.1.5)
+### Key Features (v0.1.6)
+
+**Major architectural improvement**: Backend persistence with SQLite. Race results and history are now stored server-side, enabling multi-device access and better scalability for larger user bases.
+
+- Full backend-driven race lifecycle (create race → run → save results)
+- SQLite persistence for races and history
+- All previous v0.1.5 features (parallax, audio, particles, "I need to pee" button, etc.)
 - 50 unique right-facing AI boat sprites with subtle rocking and reactive name flags
 - Parallax scrolling backgrounds (3 layers at different speeds, randomly selected each race)
 - Synthesized audio: gentle water drone, splashes on big surges, and a win chime

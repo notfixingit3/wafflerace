@@ -7,11 +7,18 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/notfixingit3/wafflerace/internal/db"
 	"github.com/notfixingit3/wafflerace/internal/handlers"
 	"github.com/notfixingit3/wafflerace/internal/templates/pages"
 )
 
 func main() {
+	// Initialize SQLite database
+	if err := db.Init(); err != nil {
+		log.Fatalf("Failed to initialize database: %v", err)
+	}
+	defer db.Close()
+
 	router := gin.Default()
 
 	// Health check
@@ -29,9 +36,17 @@ func main() {
 		_ = pages.Setup().Render(c.Request.Context(), c.Writer)
 	})
 
-	// Race
+	// Race (legacy flow)
 	router.POST("/race", handlers.StartRace)
 	router.GET("/race", handlers.ShowRace)
+
+	// API v1 (new backend-driven flow for better scalability)
+	api := router.Group("/api")
+	{
+		api.POST("/races", handlers.CreateRaceAPI)
+		api.GET("/history", handlers.GetHistoryAPI)
+		api.POST("/results", handlers.SaveResultAPI)
+	}
 
 	port := os.Getenv("PORT")
 	if port == "" {

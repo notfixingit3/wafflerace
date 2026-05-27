@@ -63,6 +63,10 @@ templ Race(names []string, duration int) {
 			// Race logic will be loaded from external file for now
 			window.RACE_NAMES = names.split("|").filter(n => n.length > 0);
 			window.RACE_DURATION = duration;
+
+			// New: Race ID from backend (for persistence)
+			const urlParams = new URLSearchParams(window.location.search);
+			window.RACE_ID = urlParams.get('id') || null;
 		</script>
 		<script src="/static/js/race.js"></script>
 	}

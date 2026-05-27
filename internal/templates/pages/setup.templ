@@ -10,7 +10,7 @@ templ Setup() {
 					<h2 class="card-title text-3xl mb-2">Start a New Race</h2>
 					<p class="text-base-content/70 mb-6">Enter names below (one per line). The waffles will race!</p>
 
-					<form action="/race" method="POST" class="space-y-6">
+					<form id="race-form" class="space-y-6">
 						<div>
 							<div class="flex justify-between items-center mb-1">
 								<label class="label">
@@ -86,6 +86,40 @@ templ Setup() {
 		</div>
 
 		<script>
+			document.getElementById('race-form').addEventListener('submit', async function(e) {
+				e.preventDefault();
+
+				const form = e.target;
+				const names = form.querySelector('textarea[name="names"]').value.trim();
+				const duration = parseInt(form.querySelector('input[name="duration"]').value, 10) || 30;
+
+				if (!names) {
+					alert("Please enter at least one name");
+					return;
+				}
+
+				const nameList = names.split('\n').map(n => n.trim()).filter(n => n.length > 0);
+
+				try {
+					const res = await fetch('/api/races', {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify({ names: nameList, duration })
+					});
+
+					if (!res.ok) {
+						throw new Error('Failed to create race');
+					}
+
+					const data = await res.json();
+					// Redirect to race page with the race ID
+					window.location.href = `/race?id=${data.id}&names=${encodeURIComponent(nameList.join(','))}&duration=${duration}`;
+				} catch (err) {
+					console.error(err);
+					alert("Failed to start race. Please try again.");
+				}
+			});
+
 			function fillTestNames() {
 				const textarea = document.querySelector('textarea[name="names"]');
 				const durationInput = document.getElementById('duration-input');
