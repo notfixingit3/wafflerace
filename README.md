@@ -132,13 +132,28 @@ Then visit `http://localhost:9090`.
 
 ### Using with Your Own Traefik
 
-Edit the Traefik labels in `docker-compose.dev.yml` or `docker-compose.prod.yml` to match your domain and setup, then bring up the app:
+The compose files include the necessary Traefik labels. Edit the `Host()` rules and other values to match your setup.
+
+**Production example** (using a published release image):
+
+```bash
+docker compose -f docker-compose.prod.yml up -d
+```
+
+**Development with published dev image** (no local build needed):
+
+```bash
+# Edit docker-compose.dev.yml and switch from "build: ." to the :dev image
+docker compose -f docker-compose.dev.yml up -d
+```
+
+**Local development** (recommended when actively working on the code):
 
 ```bash
 docker compose -f docker-compose.dev.yml up -d --build
 ```
 
-Example labels are included in the compose files with clear comments.
+Example labels and comments are included directly in the compose files.
 
 ---
 
@@ -167,6 +182,25 @@ docker compose up -d --build
 Then visit `http://localhost:9090`.
 
 See the compose files themselves for Traefik label examples when using an external reverse proxy.
+
+### Docker Images
+
+Docker images are published to GitHub Container Registry:
+
+- **Releases** (`v*` tags):  
+  `ghcr.io/notfixingit3/wafflerace:<version>` (e.g. `v0.1.12`)  
+  `ghcr.io/notfixingit3/wafflerace:latest`
+
+- **Development** (every push to the `dev` branch):  
+  `ghcr.io/notfixingit3/wafflerace:dev`
+
+**Recommended branching + image strategy:**
+
+- `main` → Stable releases only. Use `:latest` or a pinned version in production.
+- `dev` → Active development. Use the `:dev` image if you want the latest changes without building locally.
+- All releases are created from the `dev` branch (enforced by CI).
+
+See `docker-compose.dev.yml` and `docker-compose.prod.yml` for examples of both building locally and using pre-built images.
 
 #### Asset Conversion Helpers
 

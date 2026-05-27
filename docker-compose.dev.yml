@@ -4,24 +4,36 @@ version: "3.8"
 # Wafflerace - Development (Traefik-aware)
 # =============================================================================
 #
-# This file defines ONLY the application service with the Traefik labels it needs.
+# This file defines ONLY the application service + the Traefik labels it needs.
 #
 # ASSUMPTION:
 # You are expected to already have your own Traefik (and optionally CrowdSec)
-# running and connected to an external network called "proxy".
+# running and connected to an external Docker network called "proxy".
 #
-# The labels below tell your Traefik how to route traffic to this app.
-# Customize the Host rule and entrypoint as needed for your setup.
+# Docker images are published on every push to the `dev` branch as:
+#   ghcr.io/notfixingit3/wafflerace:dev
 #
-# Example usage:
-#   docker network create proxy
-#   docker compose -f docker-compose.dev.yml up -d --build
+# Two common ways to run during development:
+#
+#   1. Build locally (recommended when actively developing):
+#      docker compose -f docker-compose.dev.yml up -d --build
+#
+#   2. Use the latest image from the dev branch (faster, no local build):
+#      - Comment out the "build:" line below
+#      - Uncomment the "image:" line that uses :dev
+#
+# The labels below tell your external Traefik how to route to the app.
+# Customize the Host rule for your local/staging domain.
 #
 # =============================================================================
 
 services:
   app:
+    # Option A: Build locally (best when developing)
     build: .
+    # Option B: Use the bleeding-edge dev image (no local build needed)
+    # image: ghcr.io/notfixingit3/wafflerace:dev
+
     container_name: wafflerace-dev
     restart: unless-stopped
     environment:

@@ -4,15 +4,19 @@ version: "3.8"
 # Wafflerace - Production (Traefik-aware)
 # =============================================================================
 #
-# This file defines ONLY the application service with the Traefik labels it needs.
+# This file defines ONLY the application service + the Traefik labels it needs.
 #
 # ASSUMPTION:
 # You are expected to already have your own Traefik (and optionally CrowdSec)
-# running and connected to an external network called "proxy".
+# running, along with an external Docker network called "proxy".
 #
-# Customize the labels below for your domain and setup.
+# Docker images are published to GitHub Container Registry on every release:
+#   ghcr.io/notfixingit3/wafflerace:<version>
+#   ghcr.io/notfixingit3/wafflerace:latest
 #
-# Recommended: Pin the image version instead of using :latest.
+# Recommended:
+#   - Pin a specific version in production instead of using :latest
+#   - Example: ghcr.io/notfixingit3/wafflerace:v0.1.12
 #
 # Example usage:
 #   docker compose -f docker-compose.prod.yml up -d
@@ -21,6 +25,7 @@ version: "3.8"
 
 services:
   app:
+    # Use a pinned version in production (recommended)
     image: ghcr.io/notfixingit3/wafflerace:latest
     container_name: wafflerace
     restart: unless-stopped
