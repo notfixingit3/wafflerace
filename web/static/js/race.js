@@ -1,4 +1,8 @@
 // Wafflerace - Canvas Animation
+import { initAudio, playSplash, playFinishChime } from './race-audio.js';
+import { ParticleSystem } from './race-particles.js';
+import { calculateVisualProgress } from './race-logic.js';
+
 (function () {
   const canvas = document.getElementById('race-canvas');
   if (!canvas) return;
@@ -20,28 +24,6 @@
   // === Configuration (centralized for maintainability) ===
   const TOTAL_BOAT_SPRITES = 50;
   const MAX_BG_IMAGES = 40; // supports default (20) + nature (30) + future collections
-
-  // Visual clamping constants (core suspense mechanic)
-  const VISUAL_CLAMP_START = 0.68;
-  const VISUAL_CLAMP_RELEASE = 0.92;
-  const VISUAL_MAX_DURING_CLAMP = 0.81;
-
-  function calculateVisualProgress(logicalProgress, progress) {
-    let visProg = logicalProgress;
-
-    if (progress > VISUAL_CLAMP_START) {
-      if (progress < VISUAL_CLAMP_RELEASE) {
-        visProg = Math.min(logicalProgress, VISUAL_MAX_DURING_CLAMP);
-      } else {
-        const releaseT =
-          (progress - VISUAL_CLAMP_RELEASE) / (1 - VISUAL_CLAMP_RELEASE);
-        const maxVis = VISUAL_MAX_DURING_CLAMP + releaseT * 0.19;
-        visProg = Math.min(logicalProgress, maxVis);
-      }
-    }
-
-    return Math.max(0, Math.min(1, visProg));
-  }
 
   // Jitter behavior
   const BASE_JITTER_INTERVAL = 90;
@@ -121,142 +103,8 @@
   // Runtime selected parallax layers (far, mid, near/water)
   let parallaxLayers = [];
 
-  // Simple particle system for syrup drips / splashes
-  let particles = [];
-
-  function emitParticles(x, y, count = 6) {
-    for (let i = 0; i < count; i++) {
-      particles.push({
-        x: x + (Math.random() - 0.5) * 18,
-        y: y + Math.random() * 6,
-        vx: (Math.random() - 0.5) * 1.8,
-        vy: 0.6 + Math.random() * 1.2,
-        life: 28 + Math.random() * 18,
-        size: 1.2 + Math.random() * 1.8,
-      });
-    }
-  }
-
-  // Audio (Web Audio API - synthesized for zero extra assets)
-  let audioCtx;
-  let waterOsc, waterGain, waterFilter;
-  let lastSplashTime = 0;
-
-  function initAudio() {
-    if (audioCtx) return;
-    try {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-      // Subtle water lapping drone
-      waterOsc = audioCtx.createOscillator();
-      waterOsc.type = 'sine';
-      waterOsc.frequency.value = 48;
-
-      waterFilter = audioCtx.createBiquadFilter();
-      waterFilter.type = 'lowpass';
-      waterFilter.frequency.value = 420;
-
-      waterGain = audioCtx.createGain();
-      waterGain.gain.value = 0.018;
-
-      const noise = audioCtx.createBufferSource();
-      const buffer = audioCtx.createBuffer(
-        1,
-        audioCtx.sampleRate * 2,
-        audioCtx.sampleRate
-      );
-      const data = buffer.getChannelData(0);
-      for (let i = 0; i < data.length; i++) {
-        data[i] = Math.random() * 2 - 1;
-      }
-      noise.buffer = buffer;
-      noise.loop = true;
-
-      const noiseFilter = audioCtx.createBiquadFilter();
-      noiseFilter.type = 'bandpass';
-      noiseFilter.frequency.value = 280;
-      noiseFilter.Q.value = 1.8;
-
-      const noiseGain = audioCtx.createGain();
-      noiseGain.gain.value = 0.012;
-
-      const waterMix = audioCtx.createGain();
-      waterMix.gain.value = 0.7;
-
-      waterOsc.connect(waterFilter);
-      waterFilter.connect(waterGain);
-      noise.connect(noiseFilter);
-      noiseFilter.connect(noiseGain);
-      waterGain.connect(waterMix);
-      noiseGain.connect(waterMix);
-      waterMix.connect(audioCtx.destination);
-
-      waterOsc.start();
-      noise.start();
-    } catch (e) {
-      // Audio not critical
-    }
-  }
-
-  function playSplash(intensity = 1) {
-    if (!audioCtx) return;
-    const now = audioCtx.currentTime;
-    if (now - lastSplashTime < 0.06) return; // throttle
-    lastSplashTime = now;
-
-    const osc = audioCtx.createOscillator();
-    osc.type = 'sawtooth';
-    osc.frequency.value = 180 + Math.random() * 90;
-
-    const noise = audioCtx.createBufferSource();
-    const buffer = audioCtx.createBuffer(
-      1,
-      audioCtx.sampleRate * 0.6,
-      audioCtx.sampleRate
-    );
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
-    noise.buffer = buffer;
-
-    const filter = audioCtx.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.frequency.value = 650 + intensity * 180;
-
-    const gain = audioCtx.createGain();
-    gain.gain.value = 0.035 * intensity;
-
-    const decay = audioCtx.createGain();
-    decay.gain.value = 1;
-    decay.gain.linearRampToValueAtTime(0.0001, now + 0.45);
-
-    osc.connect(filter);
-    noise.connect(filter);
-    filter.connect(gain);
-    gain.connect(decay);
-    decay.connect(audioCtx.destination);
-
-    osc.start(now);
-    noise.start(now);
-    osc.stop(now + 0.6);
-  }
-
-  function playFinishChime() {
-    if (!audioCtx) return;
-    const now = audioCtx.currentTime;
-    const notes = [620, 780, 930];
-    notes.forEach((freq, i) => {
-      const osc = audioCtx.createOscillator();
-      osc.type = 'sine';
-      osc.frequency.value = freq;
-      const gain = audioCtx.createGain();
-      gain.gain.value = 0.09;
-      gain.gain.linearRampToValueAtTime(0.0001, now + 0.9 + i * 0.08);
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start(now + i * 0.07);
-      osc.stop(now + 1.4);
-    });
-  }
+  // Particle system
+  const particleSystem = new ParticleSystem();
 
   const FINISH_LINE = canvas.width - 80;
   const START_X = 90;
@@ -265,7 +113,7 @@
     waffles = [];
     results = [];
     finished = false;
-    particles = [];
+    particleSystem.clear();
 
     // Randomly pick 3 distinct backgrounds for parallax (far / mid / water)
     // Only use images that actually loaded successfully for this collection
@@ -467,19 +315,8 @@
     }
 
     // Particles (syrup drips / splashes)
-    ctx.fillStyle = 'rgba(140, 80, 45, 0.75)';
-    for (let i = particles.length - 1; i >= 0; i--) {
-      const p = particles[i];
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-      ctx.fill();
-      p.x += p.vx;
-      p.y += p.vy;
-      p.vy += 0.04;
-      p.life--;
-      p.size *= 0.985;
-      if (p.life <= 0) particles.splice(i, 1);
-    }
+    particleSystem.update();
+    particleSystem.draw(ctx);
 
     // Finish line (late reveal)
     const finishVisibility = Math.max(0, (progress - 0.72) / 0.28);
@@ -599,8 +436,8 @@
 
         // Emit particles on big changes
         if (Math.abs(w.targetSpeed - w.currentSpeed) > w.baseSpeed * 1.4) {
-          emitParticles(w.x, w.y + 6, isFinalPhase ? 9 : 5);
-          if (audioCtx && isFinalPhase) playSplash(1.1);
+          particleSystem.emit(w.x, w.y + 6, isFinalPhase ? 9 : 5);
+          if (isFinalPhase) playSplash(1.1);
         }
       }
 
@@ -675,7 +512,8 @@
           winnerNameEl.classList.add('opacity-100', 'scale-100');
 
           // Trigger confetti / particles for winner
-          triggerWinnerConfetti();
+          const rect = canvas.getBoundingClientRect();
+          particleSystem.emitWinnerConfetti(rect.width / 2, rect.height / 2);
         }, 650);
       }, 300);
     }
@@ -812,28 +650,7 @@
     });
   }
 
-  // Simple confetti-style particle burst for winner reveal
-  function triggerWinnerConfetti() {
-    const canvas = document.getElementById('race-canvas');
-    if (!canvas) return;
 
-    const rect = canvas.getBoundingClientRect();
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-
-    // Create a burst of golden particles
-    for (let i = 0; i < 80; i++) {
-      particles.push({
-        x: centerX + (Math.random() - 0.5) * 80,
-        y: centerY + (Math.random() - 0.5) * 40,
-        vx: (Math.random() - 0.5) * 6,
-        vy: -1.5 - Math.random() * 3.5,
-        life: 45 + Math.random() * 35,
-        size: 2.5 + Math.random() * 3.5,
-        color: Math.random() > 0.6 ? '#facc15' : '#fde047',
-      });
-    }
-  }
 
   function updateTimer() {
     if (!startTime || finished) return;
@@ -1007,7 +824,7 @@
     finished = false;
     paused = false;
     results = [];
-    particles = [];
+    particleSystem.clear();
 
     const resultsEl = document.getElementById('results');
     if (resultsEl) resultsEl.classList.add('hidden');
