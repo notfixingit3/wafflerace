@@ -44,14 +44,21 @@ This is a companion project to [Project Syrup](https://github.com/notfixingit3/w
 
 Wafflerace now uses high-quality AI-generated boat sprites and river backgrounds instead of programmer art. The race emphasizes maximum suspense: boats move with chaotic, variable speeds, but no one visually reaches the finish line until the very final seconds.
 
-### Key Features (v0.1.1)
+### Key Features (v0.1.5)
 - 50 unique right-facing AI boat sprites with subtle rocking and reactive name flags
 - Parallax scrolling backgrounds (3 layers at different speeds, randomly selected each race)
 - Synthesized audio: gentle water drone, splashes on big surges, and a win chime
 - Particle effects (syrup drips and small splashes)
 - Smooth loading progress screen while assets load
-- Extremely aggressive final-phase jitter and rubber-banding for maximum chaos in the last 15–20%
+- Extremely aggressive final-phase jitter and rubber-banding
 - Strong visual clamping so the leader stays well back until the buzzer
+- "I need to pee" pause button
+- Quick duration presets (15s–5min in 30s steps) + manual input
+- Name display options (full / short / hidden)
+- Hide controls during race for cleaner presentation
+- Race history (last 10 runs stored locally)
+- "Run Again with same names" workflow
+- Touch-friendly setup screen for tablets
 - Up to 50 participants with smooth 60fps canvas animation
 - Clean results with podium + full field (no times shown)
 - Docker + Traefik + CrowdSec ready for production deployment

@@ -24,10 +24,21 @@ templ Race(names []string, duration int) {
 				</div>
 			</div>
 
-			<div class="flex gap-4 justify-center items-center flex-wrap">
+			<div id="race-controls" class="flex gap-3 justify-center items-center flex-wrap">
 				<button id="start-btn" class="btn btn-primary btn-lg">Start Race</button>
+				<button id="pee-btn" class="btn btn-warning btn-lg hidden">I need to pee</button>
+				<button id="run-again-btn" class="btn btn-accent btn-lg hidden">Run Again</button>
+				<button id="hide-controls-btn" class="btn btn-ghost btn-lg">Hide Controls</button>
 				<button id="fullscreen-btn" class="btn btn-lg">⛶ Fullscreen</button>
 				<a href="/" class="btn btn-lg">New Race</a>
+			</div>
+
+			<!-- Name Display Options -->
+			<div id="name-options" class="flex justify-center gap-2 mt-3 text-sm">
+				<span class="self-center mr-2 text-base-content/70">Names:</span>
+				<button type="button" class="btn btn-xs btn-outline" onclick="setNameDisplay('full')">Full</button>
+				<button type="button" class="btn btn-xs btn-outline" onclick="setNameDisplay('short')">Short</button>
+				<button type="button" class="btn btn-xs btn-outline" onclick="setNameDisplay('hidden')">Hidden</button>
 			</div>
 
 			<div id="results" class="hidden mt-8">
@@ -37,6 +48,12 @@ templ Race(names []string, duration int) {
 						<div id="results-list" class="space-y-2 mt-4"></div>
 					</div>
 				</div>
+			</div>
+
+			<!-- Recent Race History -->
+			<div id="history-section" class="hidden mt-8 max-w-2xl mx-auto">
+				<h3 class="text-lg font-semibold mb-2 px-1">Recent Races</h3>
+				<div id="history-list" class="space-y-2"></div>
 			</div>
 		</div>
 

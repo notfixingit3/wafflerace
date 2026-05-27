@@ -12,6 +12,10 @@
   let lastTime = null;
   let finished = false;
   let results = [];
+  let paused = false;
+  let pauseStartTime = null;
+  let nameDisplayMode = 'short'; // 'full', 'short', or 'hidden'
+  let controlsHidden = false;
 
   // === AI-Generated Boat Sprites (50 right-facing variants) ===
   const TOTAL_BOAT_SPRITES = 50;
@@ -274,11 +278,16 @@
     ctx.quadraticCurveTo(attachX - 14 - (tilt || 0) * 0.3, attachY + 6, attachX, attachY + 5);
     ctx.stroke();
 
-    ctx.fillStyle = '#3f2a1d';
-    ctx.font = '8px system-ui, sans-serif';
-    ctx.textAlign = 'right';
-    let displayName = name.length > 9 ? name.slice(0, 8) + '…' : name;
-    ctx.fillText(displayName, attachX - 2, attachY + 2);
+    if (nameDisplayMode !== 'hidden') {
+      ctx.fillStyle = '#3f2a1d';
+      ctx.font = '8px system-ui, sans-serif';
+      ctx.textAlign = 'right';
+      let displayName = name;
+      if (nameDisplayMode === 'short' && name.length > 9) {
+        displayName = name.slice(0, 8) + '…';
+      }
+      ctx.fillText(displayName, attachX - 2, attachY + 2);
+    }
 
     ctx.restore();
   }
@@ -382,7 +391,7 @@
   }
 
   function update() {
-    if (!startTime || finished) return;
+    if (!startTime || finished || paused) return;
 
     const now = Date.now();
     const elapsed = (now - startTime) / 1000;
@@ -541,6 +550,18 @@
     container.classList.remove('hidden');
     document.getElementById('start-btn').disabled = true;
 
+    // Save to history
+    if (results.length > 0) {
+      saveRaceToHistory(results[0].name);
+    }
+
+    // Show history
+    showRaceHistory();
+
+    // Show "Run Again" button
+    const runAgainBtn = document.getElementById('run-again-btn');
+    if (runAgainBtn) runAgainBtn.classList.remove('hidden');
+
     // Subtle win chime
     setTimeout(playFinishChime, 120);
   }
@@ -579,13 +600,140 @@
     initAudio();
     startTime = Date.now();
     lastTime = null;
+    paused = false;
     initWaffles();
 
     const timerEl = document.getElementById('timer');
     if (timerEl) timerEl.textContent = duration.toFixed(1) + 's';
 
     document.getElementById('start-btn').disabled = true;
+    const peeBtn = document.getElementById('pee-btn');
+    if (peeBtn) peeBtn.classList.remove('hidden');
+
     loop();
+  }
+
+  function togglePee() {
+    const peeBtn = document.getElementById('pee-btn');
+    if (!peeBtn) return;
+
+    paused = !paused;
+
+    if (paused) {
+      pauseStartTime = Date.now();
+      peeBtn.textContent = 'Resume Race';
+      peeBtn.classList.remove('btn-warning');
+      peeBtn.classList.add('btn-success');
+    } else {
+      // Adjust startTime to account for pause duration
+      if (pauseStartTime) {
+        const pauseDuration = Date.now() - pauseStartTime;
+        startTime += pauseDuration;
+        pauseStartTime = null;
+      }
+      peeBtn.textContent = 'I need to pee';
+      peeBtn.classList.remove('btn-success');
+      peeBtn.classList.add('btn-warning');
+      loop(); // restart the animation loop
+    }
+  }
+
+  function setNameDisplay(mode) {
+    nameDisplayMode = mode;
+    if (startTime && !finished) {
+      draw();
+    }
+  }
+
+  function toggleHideControls() {
+    const controls = document.getElementById('race-controls');
+    const nameOptions = document.getElementById('name-options');
+    const hideBtn = document.getElementById('hide-controls-btn');
+
+    controlsHidden = !controlsHidden;
+
+    if (controlsHidden) {
+      if (controls) controls.style.display = 'none';
+      if (nameOptions) nameOptions.style.display = 'none';
+      if (hideBtn) hideBtn.textContent = 'Show Controls';
+    } else {
+      if (controls) controls.style.display = '';
+      if (nameOptions) nameOptions.style.display = '';
+      if (hideBtn) hideBtn.textContent = 'Hide Controls';
+    }
+  }
+
+  function saveRaceToHistory(winnerName) {
+    try {
+      const history = JSON.parse(localStorage.getItem('wafflerace_history') || '[]');
+      history.unshift({
+        timestamp: Date.now(),
+        winner: winnerName,
+        duration: duration,
+        participantCount: window.RACE_NAMES ? window.RACE_NAMES.length : 0
+      });
+      const trimmed = history.slice(0, 10);
+      localStorage.setItem('wafflerace_history', JSON.stringify(trimmed));
+    } catch (e) {}
+  }
+
+  function showRaceHistory() {
+    const section = document.getElementById('history-section');
+    const list = document.getElementById('history-list');
+    if (!section || !list) return;
+
+    try {
+      const history = JSON.parse(localStorage.getItem('wafflerace_history') || '[]');
+      if (history.length === 0) {
+        section.classList.add('hidden');
+        return;
+      }
+
+      list.innerHTML = '';
+      history.forEach(entry => {
+        const div = document.createElement('div');
+        div.className = 'bg-base-200 px-3 py-2 rounded-lg text-sm flex justify-between items-center';
+        const date = new Date(entry.timestamp).toLocaleString();
+        div.innerHTML = `
+          <div>
+            <span class="font-medium">${entry.winner}</span>
+            <span class="text-base-content/60 ml-2">• ${entry.participantCount} participants • ${entry.duration}s</span>
+          </div>
+          <div class="text-xs text-base-content/60">${date}</div>
+        `;
+        list.appendChild(div);
+      });
+      section.classList.remove('hidden');
+    } catch (e) {
+      section.classList.add('hidden');
+    }
+  }
+
+  function runAgainWithSameNames() {
+    if (!window.RACE_NAMES || window.RACE_NAMES.length === 0) return;
+
+    startTime = null;
+    finished = false;
+    paused = false;
+    results = [];
+    particles = [];
+
+    const resultsEl = document.getElementById('results');
+    if (resultsEl) resultsEl.classList.add('hidden');
+
+    const startBtn = document.getElementById('start-btn');
+    const peeBtn = document.getElementById('pee-btn');
+    const runAgainBtn = document.getElementById('run-again-btn');
+
+    if (startBtn) startBtn.disabled = false;
+    if (peeBtn) peeBtn.classList.add('hidden');
+    if (runAgainBtn) runAgainBtn.classList.add('hidden');
+
+    const timerEl = document.getElementById('timer');
+    if (timerEl) timerEl.textContent = duration.toFixed(1) + 's';
+
+    initWaffles();
+    draw();
   }
 
   // Init
@@ -595,6 +743,21 @@
 
     const startBtn = document.getElementById('start-btn');
     startBtn.addEventListener('click', startRace);
+
+    const peeBtn = document.getElementById('pee-btn');
+    if (peeBtn) {
+      peeBtn.addEventListener('click', togglePee);
+    }
+
+    const hideBtn = document.getElementById('hide-controls-btn');
+    if (hideBtn) {
+      hideBtn.addEventListener('click', toggleHideControls);
+    }
+
+    const runAgainBtn = document.getElementById('run-again-btn');
+    if (runAgainBtn) {
+      runAgainBtn.addEventListener('click', runAgainWithSameNames);
+    }
 
     // Fullscreen button
     const fsBtn = document.getElementById('fullscreen-btn');

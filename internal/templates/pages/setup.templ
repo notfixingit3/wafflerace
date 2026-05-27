@@ -27,35 +27,52 @@ templ Setup() {
 							<textarea 
 								name="names" 
 								required 
-								class="textarea textarea-bordered w-full h-48 font-mono text-sm"
+								class="textarea textarea-bordered w-full h-48 md:h-56 font-mono text-base touch-manipulation"
 								placeholder="Alice&#10;Bob&#10;Charlie&#10;Dana"
+								style="min-height: 180px;"
 							></textarea>
 							<div class="label">
 								<span class="label-text-alt">One name per line</span>
 							</div>
 						</div>
 
-						<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-							<div>
-								<label class="label">
-									<span class="label-text font-medium">Race Duration</span>
-								</label>
-								<div class="flex gap-2 items-center">
-									<input 
-										type="number" 
-										name="duration" 
-										value="25" 
-										min="10" 
-										max="120" 
-										class="input input-bordered w-24"
-									/>
-									<span class="text-sm">seconds</span>
-								</div>
+						<div>
+							<label class="label">
+								<span class="label-text font-medium">Race Duration</span>
+							</label>
+
+							<!-- Quick presets for tablet/laptop use (up to 5 minutes in 30s steps) -->
+							<div class="flex flex-wrap gap-2 mb-3">
+								<button type="button" class="btn btn-sm btn-outline" onclick="setDuration(15)">15s</button>
+								<button type="button" class="btn btn-sm btn-outline" onclick="setDuration(30)">30s</button>
+								<button type="button" class="btn btn-sm btn-outline" onclick="setDuration(45)">45s</button>
+								<button type="button" class="btn btn-sm btn-outline" onclick="setDuration(60)">1m</button>
+								<button type="button" class="btn btn-sm btn-outline" onclick="setDuration(90)">1m 30s</button>
+								<button type="button" class="btn btn-sm btn-outline" onclick="setDuration(120)">2m</button>
+								<button type="button" class="btn btn-sm btn-outline" onclick="setDuration(150)">2m 30s</button>
+								<button type="button" class="btn btn-sm btn-outline" onclick="setDuration(180)">3m</button>
+								<button type="button" class="btn btn-sm btn-outline" onclick="setDuration(210)">3m 30s</button>
+								<button type="button" class="btn btn-sm btn-outline" onclick="setDuration(240)">4m</button>
+								<button type="button" class="btn btn-sm btn-outline" onclick="setDuration(270)">4m 30s</button>
+								<button type="button" class="btn btn-sm btn-outline" onclick="setDuration(300)">5m</button>
+							</div>
+
+							<div class="flex gap-2 items-center">
+								<input 
+									type="number" 
+									name="duration" 
+									id="duration-input"
+									value="30" 
+									min="10" 
+									max="300" 
+									class="input input-bordered w-24 text-lg"
+								/>
+								<span class="text-sm">seconds (manual)</span>
 							</div>
 						</div>
 
 						<div class="card-actions justify-end pt-4">
-							<button type="submit" class="btn btn-primary btn-lg">
+							<button type="submit" class="btn btn-primary btn-lg w-full md:w-auto min-h-[52px]">
 								Start Race 🧇
 							</button>
 						</div>
@@ -71,7 +88,7 @@ templ Setup() {
 		<script>
 			function fillTestNames() {
 				const textarea = document.querySelector('textarea[name="names"]');
-				const durationInput = document.querySelector('input[name="duration"]');
+				const durationInput = document.getElementById('duration-input');
 
 				if (!textarea) return;
 
@@ -97,6 +114,13 @@ templ Setup() {
 
 				if (durationInput) {
 					durationInput.value = 30;
+				}
+			}
+
+			function setDuration(seconds) {
+				const durationInput = document.getElementById('duration-input');
+				if (durationInput) {
+					durationInput.value = seconds;
 				}
 			}
 		</script>
