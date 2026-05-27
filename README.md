@@ -1,5 +1,9 @@
 <p align="center">
-  <img src="assets/logo.png" width="260" alt="Wafflerace logo" />
+  <img src="assets/logo.png" width="420" alt="Wafflerace logo" />
+</p>
+
+<p align="center">
+  <sub>PNG with transparent background also available as <code>assets/logo.webp</code> (recommended for web)</sub>
 </p>
 
 <h1 align="center">Wafflerace</h1>
@@ -209,12 +213,16 @@ MIT — do whatever you want.
 ---
 
 <p align="center">
-  If this project helps you run smoother races, consider buying me a coffee:
+  If this project helps you run smoother races, consider supporting the work:
 </p>
 
 <p align="center">
   <a href="https://www.buymeacoffee.com/notfixingit">
     <img src="https://img.shields.io/badge/Buy%20Me%20A%20Coffee-FFDD00?logo=buy-me-a-coffee&logoColor=black" alt="Buy Me A Coffee" />
+  </a>
+  &nbsp;&nbsp;or&nbsp;&nbsp;
+  <a href="https://www.instagram.com/crysis_designs/">
+    <strong>sponsor the next wubble</strong> by contacting Crysis Designs on Instagram
   </a>
 </p>
 
