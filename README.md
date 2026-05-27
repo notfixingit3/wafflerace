@@ -13,8 +13,8 @@
 </p>
 
 <p align="center">
-  <strong>🧇 Waffles paddling little boats across the finish line.</strong><br>
-  First one across wins.
+  <strong>🧇 Premium AI-generated waffles racing in boats.</strong><br>
+  Maximum suspense. Winner only clear at the buzzer.
 </p>
 
 <p align="center">
@@ -28,29 +28,35 @@
 
 ## What is this?
 
-Wafflerace is a lightweight web app for running fun, animated random selection races.
+Wafflerace is a premium, syrupy recreation of the classic browser duck race — built for streamers, giveaways, raffles, and dramatic random selections.
 
-Paste a list of names, set the race length, and watch waffles paddle little boats across the screen with natural, variable-speed movement. First one to the finish wins.
+Paste a list of names, set the duration, and watch real AI-generated waffles paddle their boats with chaotic, variable speeds and natural bobbing. The race is deliberately engineered so the winner only becomes obvious in the final seconds.
 
-Same satisfying energy as the classic duck race tools streamers love, but make it syrupy.
+It uses high-quality generated assets (50+ boat sprites + layered river backgrounds) instead of simple drawings, plus subtle synthesized audio and particles for a more alive, 2026-feeling experience.
 
-This is a companion project to [Project Syrup](https://github.com/notfixingit3/waffle) and is designed to eventually integrate into it.
+This is a companion project to [Project Syrup](https://github.com/notfixingit3/waffle).
 
 ---
 
 ## Current Status
 
-**Early development.** Not ready for use yet.
+**v0.1.1** — Solid foundation with premium AI-generated visuals and audio.
 
-Planned MVP features:
-- Paste list of names (one per line)
-- Adjustable race duration
-- Smooth canvas-based animation (up to ~50 participants)
-- Continuous "feels alive" physics-style racing with variable speeds and bobbing movement
-- Clear winner announcement + results list
-- Re-run with the same list
-- Syrupy but creative waffle-in-boat visual style
-- Docker Compose setup for easy running
+Wafflerace now uses high-quality AI-generated boat sprites and river backgrounds instead of programmer art. The race emphasizes maximum suspense: boats move with chaotic, variable speeds, but no one visually reaches the finish line until the very final seconds.
+
+### Key Features (v0.1.1)
+- 50 unique right-facing AI boat sprites with subtle rocking and reactive name flags
+- Parallax scrolling backgrounds (3 layers at different speeds, randomly selected each race)
+- Synthesized audio: gentle water drone, splashes on big surges, and a win chime
+- Particle effects (syrup drips and small splashes)
+- Smooth loading progress screen while assets load
+- Extremely aggressive final-phase jitter and rubber-banding for maximum chaos in the last 15–20%
+- Strong visual clamping so the leader stays well back until the buzzer
+- Up to 50 participants with smooth 60fps canvas animation
+- Clean results with podium + full field (no times shown)
+- Docker + Traefik + CrowdSec ready for production deployment
+
+See the [changelog](https://github.com/notfixingit3/wafflerace/releases/tag/v0.1.1) for full details.
 
 ---
 
@@ -108,19 +114,21 @@ The `main` branch is kept stable and contains the current README plus minimal su
 
 ### Local Development
 
-For local development we use the dedicated dev compose file:
-
 ```bash
-docker compose -f docker-compose.dev.yml up -d --build
+docker compose up -d --build
 ```
 
-Then open the app at the domain you configured (default example: `dev-wafflerace.projectsyrup.app`).
+Then visit `http://localhost:9090`.
 
-See [README-dev.md](README-dev.md) for full setup instructions, including Traefik + CrowdSec configuration.
+See [README-dev.md](README-dev.md) for production-style Traefik + CrowdSec setup.
+
+### For Contributors
+
+See [AGENTS.md](AGENTS.md) for architecture decisions, rules (including the Scooby-Doo commit requirement), and important context.
 
 ### Commit Messages
 
-Every commit should include a random Scooby-Doo quote somewhere in the message body. Examples:
+Every commit must end with a random Scooby-Doo quote. Examples:
 
 - "Ruh-roh!"
 - "Zoinks!"
