@@ -1,9 +1,9 @@
 <p align="center">
-  <img src="assets/logo.png" width="420" alt="Wafflerace logo" />
+  <img src="assets/logo.webp" width="420" alt="Wafflerace logo" />
 </p>
 
 <p align="center">
-  <sub>PNG with transparent background also available as <code>assets/logo.webp</code> (recommended for web)</sub>
+  <sub>PNG fallback available at <code>assets/logo.png</code></sub>
 </p>
 
 <h1 align="center">Wafflerace</h1>
