@@ -53,14 +53,50 @@ templ Race(names []string, duration int) {
 					<div id="winner-announcement" class="text-4xl font-bold tracking-tight mb-2 opacity-0 transition-all duration-700">
 						🏆 THE WINNER IS...
 					</div>
-					<div id="winner-name" class="text-6xl font-extrabold text-primary opacity-0 transition-all duration-700 scale-95">
+					<div id="winner-name" class="text-6xl font-extrabold text-primary opacity-0 transition-all duration-700 scale-95 mb-4">
 						<!-- Populated by JS -->
+					</div>
+				</div>
+
+				<!-- Podium Container -->
+				<div id="podium-container" class="flex items-end justify-center gap-4 my-8 h-72 border-b-4 border-base-300 pb-1">
+					<!-- 2nd Place Step -->
+					<div id="podium-2nd" class="flex flex-col items-center opacity-0 transform translate-y-4 transition-all duration-700">
+						<div class="text-lg font-bold text-center mb-1 max-w-[120px] truncate" id="podium-2nd-name">—</div>
+						<div class="bg-base-300 w-32 h-28 rounded-t-2xl flex flex-col items-center justify-between py-3 shadow border-t border-x border-base-200">
+							<span class="text-4xl">🥈</span>
+							<span class="text-3xl font-black text-base-content/60">2</span>
+						</div>
+					</div>
+
+					<!-- 1st Place Step -->
+					<div id="podium-1st" class="flex flex-col items-center opacity-0 transform translate-y-8 transition-all duration-700">
+						<!-- Dedicated Winner Boat Canvas -->
+						<div class="h-[76px] flex items-center justify-center">
+							<canvas id="winner-boat-canvas" width="120" height="72" class="mb-1"></canvas>
+						</div>
+						<div class="text-2xl font-extrabold text-center text-primary mb-1 max-w-[160px] truncate" id="podium-1st-name">—</div>
+						<div class="bg-gradient-to-t from-yellow-200 to-yellow-100 dark:from-yellow-950 dark:to-yellow-900 border-2 border-yellow-400 w-36 h-40 rounded-t-2xl flex flex-col items-center justify-between py-4 shadow-lg relative">
+							<!-- Glowing Winner Badge -->
+							<span class="absolute -top-3 bg-yellow-400 text-yellow-950 text-xs font-black px-2 py-0.5 rounded-full shadow animate-bounce">WINNER</span>
+							<span class="text-5xl">🥇</span>
+							<span class="text-4xl font-black text-yellow-600 dark:text-yellow-400">1</span>
+						</div>
+					</div>
+
+					<!-- 3rd Place Step -->
+					<div id="podium-3rd" class="flex flex-col items-center opacity-0 transform translate-y-4 transition-all duration-700">
+						<div class="text-lg font-bold text-center mb-1 max-w-[120px] truncate" id="podium-3rd-name">—</div>
+						<div class="bg-base-200 w-28 h-20 rounded-t-2xl flex flex-col items-center justify-between py-2 shadow-sm border-t border-x border-base-300">
+							<span class="text-3xl">🥉</span>
+							<span class="text-2xl font-black text-base-content/50">3</span>
+						</div>
 					</div>
 				</div>
 
 				<div class="card bg-base-100 shadow-2xl border border-base-300">
 					<div class="card-body">
-						<h2 class="card-title text-2xl justify-center mb-4">Final Results</h2>
+						<h2 class="card-title text-2xl justify-center mb-4">Final Standings</h2>
 						<div id="results-list" class="space-y-3"></div>
 					</div>
 				</div>

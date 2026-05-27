@@ -406,7 +406,7 @@ import {
       // Build final results purely by position (no times)
       results = [...waffles]
         .sort((a, b) => b.x - a.x) // farthest = winner
-        .map((w) => ({ name: w.name }));
+        .map((w) => ({ name: w.name, spriteIndex: w.spriteIndex }));
 
       showResults();
 
@@ -437,95 +437,126 @@ import {
     const top3 = results.slice(0, 3);
     const winner = top3[0];
 
-    // === Dramatic Winner Reveal ===
-    if (winner) {
-      // Show announcement with delay
-      setTimeout(() => {
-        announcement.classList.remove('opacity-0');
-        announcement.classList.add('opacity-100');
+    // Populate names on podium steps
+    const p1Name = document.getElementById('podium-1st-name');
+    const p2Name = document.getElementById('podium-2nd-name');
+    const p3Name = document.getElementById('podium-3rd-name');
 
-        // Then reveal the winner name with bigger pop
-        setTimeout(() => {
-          winnerNameEl.textContent = winner.name;
-          winnerNameEl.classList.remove('opacity-0', 'scale-95');
-          winnerNameEl.classList.add('opacity-100', 'scale-100');
-
-          // Trigger confetti / particles for winner
-          const rect = canvas.getBoundingClientRect();
-          particleSystem.emitWinnerConfetti(rect.width / 2, rect.height / 2);
-        }, 650);
-      }, 300);
+    if (p1Name) p1Name.textContent = winner ? winner.name : '—';
+    
+    if (p2Name) {
+      if (results[1]) {
+        p2Name.textContent = results[1].name;
+        document.getElementById('podium-2nd').style.visibility = 'visible';
+      } else {
+        p2Name.textContent = '—';
+        document.getElementById('podium-2nd').style.visibility = 'hidden';
+      }
     }
 
-    // === Podium + Full Field (with slight delay for drama) ===
+    if (p3Name) {
+      if (results[2]) {
+        p3Name.textContent = results[2].name;
+        document.getElementById('podium-3rd').style.visibility = 'visible';
+      } else {
+        p3Name.textContent = '—';
+        document.getElementById('podium-3rd').style.visibility = 'hidden';
+      }
+    }
+
+    // Render winner's boat sprite onto the winner canvas
+    const winnerCanvas = document.getElementById('winner-boat-canvas');
+    if (winnerCanvas && winner) {
+      const wCtx = winnerCanvas.getContext('2d');
+      wCtx.clearRect(0, 0, winnerCanvas.width, winnerCanvas.height);
+      const img = boatImages[winner.spriteIndex];
+      if (img && img.complete) {
+        const targetHeight = 64;
+        const scale = targetHeight / img.height;
+        const drawWidth = img.width * scale;
+        const drawHeight = img.height * scale;
+        const cx = winnerCanvas.width / 2;
+        const cy = winnerCanvas.height / 2;
+        wCtx.save();
+        wCtx.translate(cx, cy);
+        wCtx.drawImage(img, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
+        wCtx.restore();
+      } else {
+        wCtx.save();
+        wCtx.translate(winnerCanvas.width / 2, winnerCanvas.height / 2);
+        wCtx.fillStyle = '#f4c95f';
+        wCtx.beginPath();
+        wCtx.arc(0, 0, 18, 0, Math.PI * 2);
+        wCtx.fill();
+        wCtx.restore();
+      }
+    }
+
+    // Sequential podium reveal timers
+    // 1. Reveal 3rd place podium (t = 600ms)
     setTimeout(() => {
-      // Top 3 Podium
-      if (top3.length > 0) {
-        const podiumHeader = document.createElement('div');
-        podiumHeader.className = 'text-center mb-4';
-        podiumHeader.innerHTML = `<h3 class="text-xl font-semibold tracking-wide">PODIUM</h3>`;
-        list.appendChild(podiumHeader);
+      const p3 = document.getElementById('podium-3rd');
+      if (p3 && results[2]) {
+        p3.classList.remove('opacity-0', 'translate-y-4');
+        p3.classList.add('opacity-100', 'translate-y-0', 'scale-100');
+        playSplash(0.8);
+      }
+    }, 600);
 
-        const podiumList = document.createElement('div');
-        podiumList.className = 'space-y-3 mb-8';
+    // 2. Reveal 2nd place podium (t = 1200ms)
+    setTimeout(() => {
+      const p2 = document.getElementById('podium-2nd');
+      if (p2 && results[1]) {
+        p2.classList.remove('opacity-0', 'translate-y-4');
+        p2.classList.add('opacity-100', 'translate-y-0', 'scale-100');
+        playSplash(0.9);
+      }
+    }, 1200);
 
-        top3.forEach((r, index) => {
-          const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉';
-          const isWinner = index === 0;
-
-          const div = document.createElement('div');
-          div.className = `flex items-center justify-between p-4 rounded-2xl text-lg font-medium transition-all ${
-            isWinner
-              ? 'bg-yellow-100 border-2 border-yellow-400 shadow-lg scale-[1.03]'
-              : 'bg-base-200 border border-base-300'
-          }`;
-
-          const details = document.createElement('div');
-          details.className = 'flex items-center gap-4';
-
-          const medalEl = document.createElement('span');
-          medalEl.className = 'text-4xl';
-          medalEl.textContent = medal;
-
-          const nameEl = document.createElement('span');
-          nameEl.className = 'font-semibold';
-          nameEl.textContent = r.name;
-
-          details.append(medalEl, nameEl);
-          div.appendChild(details);
-
-          if (isWinner) {
-            const winnerBadge = document.createElement('span');
-            winnerBadge.className = 'text-sm font-bold text-yellow-600';
-            winnerBadge.textContent = 'WINNER';
-            div.appendChild(winnerBadge);
-          }
-
-          podiumList.appendChild(div);
-        });
-
-        list.appendChild(podiumList);
+    // 3. Reveal 1st place podium & winner details (t = 1800ms)
+    setTimeout(() => {
+      const p1 = document.getElementById('podium-1st');
+      if (p1 && winner) {
+        p1.classList.remove('opacity-0', 'translate-y-8');
+        p1.classList.add('opacity-100', 'translate-y-0', 'scale-105');
       }
 
-      // Full Field
+      if (announcement) {
+        announcement.classList.remove('opacity-0');
+        announcement.classList.add('opacity-100');
+      }
+
+      if (winnerNameEl && winner) {
+        winnerNameEl.textContent = winner.name;
+        winnerNameEl.classList.remove('opacity-0', 'scale-95');
+        winnerNameEl.classList.add('opacity-100', 'scale-100');
+      }
+
+      // Confetti & Win Chime
+      const rect = canvas.getBoundingClientRect();
+      particleSystem.emitWinnerConfetti(rect.width / 2, rect.height / 2);
+      playFinishChime();
+    }, 1800);
+
+    // 4. Reveal Rest of the Field & persistence controls (t = 2500ms)
+    setTimeout(() => {
+      // Full Standings list (4th place and below)
       if (results.length > 3) {
         const restHeader = document.createElement('h4');
-        restHeader.className =
-          'text-sm font-semibold text-base-content/70 mb-3 px-1 tracking-wider';
-        restHeader.textContent = 'FULL FIELD';
+        restHeader.className = 'text-sm font-semibold text-base-content/70 mb-3 px-1 tracking-wider';
+        restHeader.textContent = 'REST OF THE FIELD';
         list.appendChild(restHeader);
 
         const restContainer = document.createElement('div');
         restContainer.className = 'space-y-1.5 max-h-[280px] overflow-auto pr-1';
 
-        results.forEach((r, index) => {
+        results.slice(3).forEach((r, index) => {
           const div = document.createElement('div');
-          div.className =
-            'flex items-center gap-3 bg-base-200 px-4 py-2.5 rounded-xl text-sm';
+          div.className = 'flex items-center gap-3 bg-base-200 px-4 py-2.5 rounded-xl text-sm';
 
           const rank = document.createElement('div');
           rank.className = 'badge badge-ghost badge-sm w-7 justify-center font-mono';
-          rank.textContent = String(index + 1);
+          rank.textContent = String(index + 4);
 
           const name = document.createElement('span');
           name.className = 'font-medium';
@@ -536,9 +567,14 @@ import {
         });
 
         list.appendChild(restContainer);
+      } else {
+        const message = document.createElement('div');
+        message.className = 'text-center py-4 text-sm text-base-content/50';
+        message.textContent = 'All racers placed on the podium.';
+        list.appendChild(message);
       }
 
-      // Save to history + show history + Run Again button
+      // Save to local storage history
       if (results.length > 0) {
         saveRaceToHistory(results[0].name);
       }
@@ -546,10 +582,7 @@ import {
 
       const runAgainBtn = document.getElementById('run-again-btn');
       if (runAgainBtn) runAgainBtn.classList.remove('hidden');
-
-      // Play win chime
-      setTimeout(playFinishChime, 200);
-    }, 1400);
+    }, 2500);
   }
 
   // Utility: Copy winner name to clipboard
@@ -807,6 +840,41 @@ import {
 
     const timerEl = document.getElementById('timer');
     if (timerEl) timerEl.textContent = duration.toFixed(1) + 's';
+
+    // Reset podium classes and details
+    const announcement = document.getElementById('winner-announcement');
+    const winnerNameEl = document.getElementById('winner-name');
+    const p1 = document.getElementById('podium-1st');
+    const p2 = document.getElementById('podium-2nd');
+    const p3 = document.getElementById('podium-3rd');
+    
+    if (announcement) {
+      announcement.classList.add('opacity-0');
+      announcement.classList.remove('opacity-100');
+    }
+    if (winnerNameEl) {
+      winnerNameEl.classList.add('opacity-0', 'scale-95');
+      winnerNameEl.classList.remove('opacity-100', 'scale-100');
+      winnerNameEl.textContent = '';
+    }
+    if (p1) {
+      p1.classList.add('opacity-0', 'translate-y-8');
+      p1.classList.remove('opacity-100', 'translate-y-0', 'scale-105');
+    }
+    if (p2) {
+      p2.classList.add('opacity-0', 'translate-y-4');
+      p2.classList.remove('opacity-100', 'translate-y-0', 'scale-100');
+    }
+    if (p3) {
+      p3.classList.add('opacity-0', 'translate-y-4');
+      p3.classList.remove('opacity-100', 'translate-y-0', 'scale-100');
+    }
+
+    const winnerCanvas = document.getElementById('winner-boat-canvas');
+    if (winnerCanvas) {
+      const wCtx = winnerCanvas.getContext('2d');
+      wCtx.clearRect(0, 0, winnerCanvas.width, winnerCanvas.height);
+    }
 
     initWaffles();
     draw();
