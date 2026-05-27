@@ -44,11 +44,12 @@ This is a companion project to [Project Syrup](https://github.com/notfixingit3/w
 
 ## Current Status
 
-**Current Focus (Post-v0.1.9)** — Release discipline & polish
-- The release process now strictly requires that all version tags come from the `dev` branch, enforced via real git history checks rather than GitHub's unreliable `base_ref` field.
-- Ongoing logo and visual refinement (new premium logo, WebP optimization, transparency fixes, removal of legacy fallback assets).
-- Improved CI and contributor hygiene (`go.sum` handling, `templ` + `goimports`, consistent asset pipeline).
-- The project is intentionally keeping the core race experience stable while maturing its release and maintenance practices.
+**v0.1.12 (In Progress)** — Infrastructure & Sustainability Release
+- Docker images are now first-class: published to GHCR on every release (multi-arch amd64 + arm64) with proper provenance, SBOM, and attestations.
+- A dedicated `:dev` image is automatically built and published on pushes to the development branch.
+- Removed the previously bundled Traefik + CrowdSec stack. Compose files are now lightweight and designed to work with an existing reverse proxy setup.
+- Release process is now strictly enforced: all `v*` tags must come from the `dev` branch.
+- Significant improvements to documentation and release tooling.
 
 **v0.1.9** — Major asset milestone: Full completion of the Flags of US collection + launch of the new Flags of the World collection, plus important improvements to the boat collections system and loader.
 - Full backend persistence with SQLite (races, history, saved lists)
