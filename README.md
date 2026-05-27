@@ -34,13 +34,17 @@ Paste a list of names, set the duration, and watch real AI-generated waffles pad
 
 It uses high-quality generated assets (50+ boat sprites + layered river backgrounds) instead of simple drawings, plus subtle synthesized audio and particles for a more alive, 2026-feeling experience.
 
+You can browse the current boat collections and backgrounds directly:
+- [Boat Collections](assets/boats/README.md)
+- [Background Collections](assets/backgrounds/README.md)
+
 This is a companion project to [Project Syrup](https://github.com/notfixingit3/waffle).
 
 ---
 
 ## Current Status
 
-**v0.1.8** — Stronger History & Analytics, comprehensive testing foundation, better error handling, frontend architecture improvements, and platform features.
+**v0.1.9** — Major asset milestone: Full completion of the Flags of US collection + launch of the new Flags of the World collection, plus important improvements to the boat collections system and loader.
 - Full backend persistence with SQLite (races, history, saved lists)
 - Spectator mode + public race links
 - Live "Current Leaders" sidebar
@@ -53,10 +57,17 @@ This is a companion project to [Project Syrup](https://github.com/notfixingit3/w
 
 Wafflerace now uses high-quality AI-generated boat sprites and river backgrounds instead of programmer art. The race emphasizes maximum suspense: boats move with chaotic, variable speeds, but no one visually reaches the finish line until the very final seconds.
 
+### v0.1.9 Highlights
+- **Flags of US collection completed** — All 50 U.S. states now have dedicated boats (Alabama → Wyoming). Every boat follows the strict right-facing + stern flag rules.
+- **New "Flags of the World" collection launched** — First 5 countries complete (India, China, United States, Indonesia, Pakistan) using the same rigorous asset pipeline.
+- Boat collection system significantly improved — Loader now properly supports named sprite collections (not just numbered `boat-right-XX` files).
+- Much stricter and more documented asset generation workflow (originals → transparent PNG → WebP) enforced across all collections.
+
 ### Key Features (v0.1.7)
 
 - Much stronger History & Analytics view (stats, searchable table, recent races)
 - Dedicated /history page with analytics
+- Boat Collections / Themes system (switch between different sets of boats, e.g. "Default" vs "Flags of US")
 - Comprehensive frontend testing foundation (Vitest + tests for core logic)
 - Improved error handling and resilience
 - Further frontend architecture cleanup (extracted race-logic.js)
@@ -147,6 +158,19 @@ docker compose up -d --build
 Then visit `http://localhost:9090`.
 
 See [README-dev.md](README-dev.md) for production-style Traefik + CrowdSec setup.
+
+#### Asset Conversion Helpers
+
+We use WebP as the primary format for boats and backgrounds (much smaller files).
+
+Useful commands:
+
+```bash
+npm run convert:boats          # Convert boat sprites to WebP
+npm run convert:backgrounds    # Convert backgrounds to WebP
+```
+
+When creating new boat assets, **boats must always face right**. See `assets/boat-concepts/README.md` for the full rules.
 
 ### For Contributors
 

@@ -19,7 +19,7 @@
 
   // === Configuration (centralized for maintainability) ===
   const TOTAL_BOAT_SPRITES = 50;
-  const BG_COUNT = 20;
+  const MAX_BG_IMAGES = 40; // supports default (20) + nature (30) + future collections
 
   // Visual clamping constants (core suspense mechanic)
   const VISUAL_CLAMP_START = 0.68;
@@ -34,10 +34,47 @@
   const boatImages = [];
   let spritesLoaded = 0;
 
+  // Mapping for collections that use human-readable names instead of boat-right-XX
+  const FLAGS_OF_US_STATES = [
+    'alabama','alaska','arizona','arkansas','california','colorado','connecticut','delaware',
+    'florida','georgia','hawaii','idaho','illinois','indiana','iowa','kansas','kentucky',
+    'louisiana','maine','maryland','massachusetts','michigan','minnesota','mississippi',
+    'missouri','montana','nebraska','nevada','new-hampshire','new-jersey','new-mexico',
+    'new-york','north-carolina','north-dakota','ohio','oklahoma','oregon','pennsylvania',
+    'rhode-island','south-carolina','south-dakota','tennessee','texas','utah','vermont',
+    'virginia','washington','west-virginia','wisconsin','wyoming'
+  ];
+
+  // First 5 for the new Flags of the World collection (top countries by population)
+  const FLAGS_OF_WORLD_FIRST = [
+    'india', 'china', 'united-states', 'indonesia', 'pakistan'
+  ];
+
+  function getBoatBaseName(collection, index) {
+    if (collection === 'flags-of-us') {
+      return FLAGS_OF_US_STATES[index - 1] || `boat-right-${String(index).padStart(2, '0')}`;
+    }
+    if (collection === 'flags-of-world') {
+      return FLAGS_OF_WORLD_FIRST[index - 1] || `boat-right-${String(index).padStart(2, '0')}`;
+    }
+    return `boat-right-${String(index).padStart(2, '0')}`;
+  }
+
   function preloadBoatSprites() {
+    const collection = window.RACE_BOAT_COLLECTION || 'default';
+
     for (let i = 1; i <= TOTAL_BOAT_SPRITES; i++) {
       const img = new Image();
-      img.src = `/assets/boat-concepts/boat-right-${String(i).padStart(2, '0')}.jpg`;
+      const base = getBoatBaseName(collection, i);
+
+      // Prefer WebP (dramatically smaller file size) with PNG fallback
+      img.src = `/assets/boats/collections/${collection}/webp/${base}.webp`;
+
+      img.onerror = () => {
+        // Fallback to PNG
+        img.src = `/assets/boats/collections/${collection}/png/${base}.png`;
+      };
+
       img.onload = () => {
         spritesLoaded++;
       };
@@ -47,12 +84,30 @@
   preloadBoatSprites();
 
   // === Background images for parallax layers ===
-  const BG_COUNT = 20;
   const bgImages = [];
+  let bgsLoaded = 0;
+
   function preloadBackgrounds() {
-    for (let i = 1; i <= BG_COUNT; i++) {
+    const collection = window.RACE_BACKGROUND_COLLECTION || 'default';
+
+    for (let i = 1; i <= MAX_BG_IMAGES; i++) {
       const img = new Image();
-      img.src = `/assets/backgrounds/bg-river-${String(i).padStart(2, '0')}.jpg`;
+      const base = `bg-river-${String(i).padStart(2, '0')}`;
+
+      // Prefer WebP for better performance/size
+      img.src = `/assets/backgrounds/collections/${collection}/webp/${base}.webp`;
+
+      img.onload = () => {
+        bgsLoaded++;
+      };
+
+      img.onerror = () => {
+        // Fallback to JPG; if that also fails this slot stays empty (we filter later)
+        img.src = `/assets/backgrounds/collections/${collection}/jpg/${base}.jpg`;
+        // If the jpg fallback also 404s, the image will never complete.
+        // We still keep the object so array indices don't shift during load.
+      };
+
       bgImages.push(img);
     }
   }
@@ -208,13 +263,19 @@
     particles = [];
 
     // Randomly pick 3 distinct backgrounds for parallax (far / mid / water)
-    const shuffled = [...Array(BG_COUNT).keys()].sort(
-      () => Math.random() - 0.5
-    );
+    // Only use images that actually loaded successfully for this collection
+    const validBgs = bgImages.filter((img) => img.complete && img.width > 0);
+    if (validBgs.length < 3) {
+      // Fallback: duplicate what we have or use solid color later in draw()
+      while (validBgs.length < 3 && bgImages.length > 0) {
+        validBgs.push(bgImages[validBgs.length % bgImages.length]);
+      }
+    }
+    const shuffled = validBgs.slice().sort(() => Math.random() - 0.5);
     parallaxLayers = [
-      { img: bgImages[shuffled[0]], speed: 7 }, // far - very slow
-      { img: bgImages[shuffled[1]], speed: 18 }, // mid
-      { img: bgImages[shuffled[2]], speed: 31 }, // near water - faster
+      { img: shuffled[0], speed: 7 }, // far - very slow
+      { img: shuffled[1], speed: 18 }, // mid
+      { img: shuffled[2], speed: 31 }, // near water - faster
     ];
 
     const distance = FINISH_LINE - START_X;
@@ -347,7 +408,7 @@
       ? Math.min((Date.now() - startTime) / 1000 / duration, 1)
       : 0;
 
-    const totalAssets = TOTAL_BOAT_SPRITES + BG_COUNT;
+    const totalAssets = TOTAL_BOAT_SPRITES + MAX_BG_IMAGES;
     const loaded = spritesLoaded + bgImages.filter((b) => b.complete).length;
     const loadProgress = Math.min(1, loaded / totalAssets);
 
@@ -583,86 +644,170 @@
 
   function showResults() {
     const container = document.getElementById('results');
+    const announcement = document.getElementById('winner-announcement');
+    const winnerNameEl = document.getElementById('winner-name');
     const list = document.getElementById('results-list');
+
     list.innerHTML = '';
-
-    // === Podium (Top 3) ===
-    const top3 = results.slice(0, 3);
-
-    if (top3.length > 0) {
-      const podiumHeader = document.createElement('div');
-      podiumHeader.className = 'text-center mb-3';
-      podiumHeader.innerHTML = `<h3 class="text-2xl font-bold">🏆 Winner</h3>`;
-      list.appendChild(podiumHeader);
-
-      const podiumList = document.createElement('div');
-      podiumList.className = 'space-y-2 mb-6';
-
-      top3.forEach((r, index) => {
-        const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉';
-        const isWinner = index === 0;
-
-        const div = document.createElement('div');
-        div.className = `flex items-center justify-between p-4 rounded-xl text-lg font-medium ${
-          isWinner
-            ? 'bg-yellow-100 border-2 border-yellow-400 scale-[1.02]'
-            : 'bg-base-200'
-        }`;
-
-        div.innerHTML = `
-          <div class="flex items-center gap-3">
-            <span class="text-3xl">${medal}</span>
-            <span>${r.name}</span>
-          </div>
-        `;
-        podiumList.appendChild(div);
-      });
-
-      list.appendChild(podiumList);
-    }
-
-    // Full field (everyone, no times)
-    if (results.length > 3) {
-      const restHeader = document.createElement('h4');
-      restHeader.className =
-        'text-sm font-semibold text-base-content/70 mb-2 px-1';
-      restHeader.textContent = 'Full Field';
-      list.appendChild(restHeader);
-
-      const restContainer = document.createElement('div');
-      restContainer.className = 'space-y-1.5';
-
-      results.forEach((r, index) => {
-        const div = document.createElement('div');
-        div.className =
-          'flex items-center gap-3 bg-base-200 px-3 py-2 rounded-lg text-sm';
-        div.innerHTML = `
-          <div class="badge badge-ghost badge-sm w-6 justify-center">${index + 1}</div>
-          <span>${r.name}</span>
-        `;
-        restContainer.appendChild(div);
-      });
-
-      list.appendChild(restContainer);
-    }
-
     container.classList.remove('hidden');
     document.getElementById('start-btn').disabled = true;
 
-    // Save to history
-    if (results.length > 0) {
-      saveRaceToHistory(results[0].name);
+    const top3 = results.slice(0, 3);
+    const winner = top3[0];
+
+    // === Dramatic Winner Reveal ===
+    if (winner) {
+      // Show announcement with delay
+      setTimeout(() => {
+        announcement.classList.remove('opacity-0');
+        announcement.classList.add('opacity-100');
+
+        // Then reveal the winner name with bigger pop
+        setTimeout(() => {
+          winnerNameEl.textContent = winner.name;
+          winnerNameEl.classList.remove('opacity-0', 'scale-95');
+          winnerNameEl.classList.add('opacity-100', 'scale-100');
+
+          // Trigger confetti / particles for winner
+          triggerWinnerConfetti();
+        }, 650);
+      }, 300);
     }
 
-    // Show history
-    showRaceHistory();
+    // === Podium + Full Field (with slight delay for drama) ===
+    setTimeout(() => {
+      // Top 3 Podium
+      if (top3.length > 0) {
+        const podiumHeader = document.createElement('div');
+        podiumHeader.className = 'text-center mb-4';
+        podiumHeader.innerHTML = `<h3 class="text-xl font-semibold tracking-wide">PODIUM</h3>`;
+        list.appendChild(podiumHeader);
 
-    // Show "Run Again" button
-    const runAgainBtn = document.getElementById('run-again-btn');
-    if (runAgainBtn) runAgainBtn.classList.remove('hidden');
+        const podiumList = document.createElement('div');
+        podiumList.className = 'space-y-3 mb-8';
 
-    // Subtle win chime
-    setTimeout(playFinishChime, 120);
+        top3.forEach((r, index) => {
+          const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉';
+          const isWinner = index === 0;
+
+          const div = document.createElement('div');
+          div.className = `flex items-center justify-between p-4 rounded-2xl text-lg font-medium transition-all ${
+            isWinner
+              ? 'bg-yellow-100 border-2 border-yellow-400 shadow-lg scale-[1.03]'
+              : 'bg-base-200 border border-base-300'
+          }`;
+
+          div.innerHTML = `
+            <div class="flex items-center gap-4">
+              <span class="text-4xl">${medal}</span>
+              <span class="font-semibold">${r.name}</span>
+            </div>
+            ${isWinner ? '<span class="text-sm font-bold text-yellow-600">WINNER</span>' : ''}
+          `;
+          podiumList.appendChild(div);
+        });
+
+        list.appendChild(podiumList);
+      }
+
+      // Full Field
+      if (results.length > 3) {
+        const restHeader = document.createElement('h4');
+        restHeader.className =
+          'text-sm font-semibold text-base-content/70 mb-3 px-1 tracking-wider';
+        restHeader.textContent = 'FULL FIELD';
+        list.appendChild(restHeader);
+
+        const restContainer = document.createElement('div');
+        restContainer.className = 'space-y-1.5 max-h-[280px] overflow-auto pr-1';
+
+        results.forEach((r, index) => {
+          const div = document.createElement('div');
+          div.className =
+            'flex items-center gap-3 bg-base-200 px-4 py-2.5 rounded-xl text-sm';
+          div.innerHTML = `
+            <div class="badge badge-ghost badge-sm w-7 justify-center font-mono">${index + 1}</div>
+            <span class="font-medium">${r.name}</span>
+          `;
+          restContainer.appendChild(div);
+        });
+
+        list.appendChild(restContainer);
+      }
+
+      // Save to history + show history + Run Again button
+      if (results.length > 0) {
+        saveRaceToHistory(results[0].name);
+      }
+      showRaceHistory();
+
+      const runAgainBtn = document.getElementById('run-again-btn');
+      if (runAgainBtn) runAgainBtn.classList.remove('hidden');
+
+      // Play win chime
+      setTimeout(playFinishChime, 200);
+    }, 1400);
+  }
+
+  // Utility: Copy winner name to clipboard
+  function copyWinner() {
+    if (!results || results.length === 0) return;
+    const winner = results[0].name;
+    navigator.clipboard.writeText(winner).then(() => {
+      const originalText = event?.target?.innerText || '';
+      // Simple feedback
+      const btns = document.querySelectorAll('button');
+      btns.forEach((b) => {
+        if (b.innerText.includes('Winner')) b.innerText = 'Copied!';
+      });
+      setTimeout(() => {
+        btns.forEach((b) => {
+          if (b.innerText === 'Copied!') b.innerText = 'Copy Winner Name';
+        });
+      }, 1400);
+    });
+  }
+
+  // Utility: Copy full results as text
+  function copyFullResults() {
+    if (!results || results.length === 0) return;
+    const text = results
+      .map((r, i) => `${i + 1}. ${r.name}`)
+      .join('\n');
+    navigator.clipboard.writeText(text).then(() => {
+      const btns = document.querySelectorAll('button');
+      btns.forEach((b) => {
+        if (b.innerText.includes('Results')) b.innerText = 'Copied!';
+      });
+      setTimeout(() => {
+        btns.forEach((b) => {
+          if (b.innerText === 'Copied!') b.innerText = 'Copy Full Results';
+        });
+      }, 1400);
+    });
+  }
+
+  // Simple confetti-style particle burst for winner reveal
+  function triggerWinnerConfetti() {
+    const canvas = document.getElementById('race-canvas');
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+
+    // Create a burst of golden particles
+    for (let i = 0; i < 80; i++) {
+      particles.push({
+        x: centerX + (Math.random() - 0.5) * 80,
+        y: centerY + (Math.random() - 0.5) * 40,
+        vx: (Math.random() - 0.5) * 6,
+        vy: -1.5 - Math.random() * 3.5,
+        life: 45 + Math.random() * 35,
+        size: 2.5 + Math.random() * 3.5,
+        color: Math.random() > 0.6 ? '#facc15' : '#fde047',
+      });
+    }
   }
 
   let timerInterval = null;
