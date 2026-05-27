@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import {
   calculateVisualProgress,
   calculateTargetSpeed,
@@ -11,7 +11,13 @@ import {
   buildRaceRedirectUrl,
   createRace,
   submitRaceCreation,
-  getRaceFormValues
+  getRaceFormValues,
+  formatDisplayName,
+  getLeaders,
+  calculateVerticalSpacing,
+  calculateAverageProgress,
+  initWaffleState,
+  updateWafflePosition
 } from './race-logic.js'
 
 describe('calculateVisualProgress', () => {
@@ -252,5 +258,140 @@ describe('submitRaceCreation', () => {
     expect(fetchSpy).not.toHaveBeenCalled()
 
     fetchSpy.mockRestore()
+  })
+})
+
+describe('formatDisplayName', () => {
+  it('keeps short names as is', () => {
+    expect(formatDisplayName('Alice')).toBe('Alice')
+  })
+
+  it('slices long names and appends ellipses', () => {
+    expect(formatDisplayName('Alice Thompson Rivera Morales', 15, 10)).toBe('Alice Thom...')
+  })
+
+  it('handles empty names', () => {
+    expect(formatDisplayName('')).toBe('')
+    expect(formatDisplayName(null)).toBe('')
+  })
+})
+
+describe('getLeaders', () => {
+  it('sorts waffles by x descending', () => {
+    const waffles = [
+      { name: 'Waffle A', x: 100 },
+      { name: 'Waffle B', x: 250 },
+      { name: 'Waffle C', x: 180 },
+    ]
+    const leaders = getLeaders(waffles, 2)
+    expect(leaders).toHaveLength(2)
+    expect(leaders[0].name).toBe('Waffle B')
+    expect(leaders[1].name).toBe('Waffle C')
+  })
+
+  it('handles non-array inputs gracefully', () => {
+    expect(getLeaders(null)).toEqual([])
+  })
+})
+
+describe('calculateVerticalSpacing', () => {
+  it('calculates spacing correctly for standard inputs', () => {
+    // availableHeight = 420 - 42 - 32 = 346
+    // spacing = 346 / (5 - 1) = 86.5
+    // clamped between 23 and 36 -> should be 36
+    const spacing = calculateVerticalSpacing(5, 420)
+    expect(spacing).toBe(36)
+  })
+
+  it('handles small number of waffles (avoiding infinity)', () => {
+    const spacingSingle = calculateVerticalSpacing(1, 420)
+    expect(spacingSingle).toBe(36)
+  })
+})
+
+describe('calculateAverageProgress', () => {
+  it('calculates average progress relative to distance', () => {
+    const waffles = [
+      { x: 190 }, // 100 distance from START_X = 90
+      { x: 290 }, // 200 distance
+    ]
+    const avg = calculateAverageProgress(waffles, 90, 1090) // distance = 1000
+    // avg distance = 150
+    // avg progress = 150 / 1000 = 0.15
+    expect(avg).toBeCloseTo(0.15, 4)
+  })
+
+  it('handles division by zero and empty arrays', () => {
+    expect(calculateAverageProgress([], 90, 1090)).toBe(0)
+    expect(calculateAverageProgress([{ x: 100 }], 90, 90)).toBe(0)
+  })
+})
+
+describe('initWaffleState', () => {
+  it('creates basic waffle object structure', () => {
+    const state = initWaffleState('Waffle 1', 2, {
+      startX: 90,
+      y: 120,
+      baseSpeed: 5.5,
+      spriteIndex: 12,
+      phase: 1.5,
+      bobSpeed: 3.2
+    })
+    expect(state).toEqual({
+      name: 'Waffle 1',
+      x: 90,
+      y: 120,
+      baseSpeed: 5.5,
+      currentSpeed: 5.5,
+      targetSpeed: 5.5,
+      phase: 1.5,
+      bobSpeed: 3.2,
+      lastJitter: 0,
+      finished: false,
+      finishTime: 0,
+      spriteIndex: 12,
+      tilt: 0
+    })
+  })
+
+  it('populates defaults when optional values are omitted', () => {
+    const state = initWaffleState('Waffle 2', 4, {
+      startX: 90,
+      y: 150,
+      baseSpeed: 4.8
+    })
+    expect(state.name).toBe('Waffle 2')
+    expect(state.spriteIndex).toBe(4)
+    expect(state.phase).toBeGreaterThanOrEqual(0)
+    expect(state.bobSpeed).toBeGreaterThanOrEqual(2.6)
+  })
+})
+
+describe('updateWafflePosition', () => {
+  it('skips update if waffle is already finished', () => {
+    const waffle = { finished: true }
+    const res = updateWafflePosition(waffle, 0.016, 0.5, 0.5, 90, 1000, Date.now())
+    expect(res).toEqual({ emitJitter: false })
+  })
+
+  it('updates waffle position and returns surge status', () => {
+    const waffle = {
+      name: 'Waffle',
+      x: 90,
+      y: 100,
+      baseSpeed: 10,
+      currentSpeed: 10,
+      targetSpeed: 10,
+      phase: 0,
+      bobSpeed: 3,
+      lastJitter: 0,
+      finished: false,
+      spriteIndex: 1,
+      tilt: 0
+    }
+    const res = updateWafflePosition(waffle, 0.016, 0.5, 0.5, 90, 1000, Date.now())
+    expect(waffle.x).toBeGreaterThan(90)
+    expect(waffle.phase).toBeGreaterThan(0)
+    expect(res).toHaveProperty('emitJitter')
   })
 })

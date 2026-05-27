@@ -266,3 +266,89 @@ if (typeof window !== 'undefined') {
   window.fillTestNames = fillTestNames;
   window.setDuration = setDuration;
 }
+
+export function formatDisplayName(name, maxLength = 18, trimLength = 15) {
+  const text = String(name || '');
+  return text.length > maxLength ? text.slice(0, trimLength) + '...' : text;
+}
+
+export function getLeaders(waffles, limit = 3) {
+  if (!Array.isArray(waffles)) return [];
+  return [...waffles].sort((a, b) => b.x - a.x).slice(0, limit);
+}
+
+export function calculateVerticalSpacing(count, canvasHeight, paddingTop = 42, paddingBottom = 32) {
+  const availableHeight = canvasHeight - paddingTop - paddingBottom;
+  return Math.max(
+    23,
+    Math.min(36, availableHeight / Math.max(1, count - 1))
+  );
+}
+
+export function calculateAverageProgress(waffles, startX, finishLine) {
+  if (!Array.isArray(waffles) || waffles.length === 0) return 0;
+  const distance = finishLine - startX;
+  if (distance <= 0) return 0;
+  const sum = waffles.reduce((s, w) => s + (w.x - startX), 0);
+  return (sum / waffles.length) / distance;
+}
+
+export function initWaffleState(name, index, { startX, y, baseSpeed, spriteIndex, phase, bobSpeed }) {
+  return {
+    name: name,
+    x: startX,
+    y: y,
+    baseSpeed: baseSpeed,
+    currentSpeed: baseSpeed,
+    targetSpeed: baseSpeed,
+    phase: phase !== undefined ? phase : Math.random() * Math.PI * 2,
+    bobSpeed: bobSpeed !== undefined ? bobSpeed : 2.6 + Math.random() * 1.6,
+    lastJitter: 0,
+    finished: false,
+    finishTime: 0,
+    spriteIndex: spriteIndex !== undefined ? spriteIndex : index,
+    tilt: 0,
+  };
+}
+
+export function updateWafflePosition(waffle, dt, progress, avgProgress, startX, finishLine, now) {
+  if (waffle.finished) return { emitJitter: false };
+
+  const isFinalPhase = progress > 0.82;
+  const jitterInterval = getJitterInterval(progress);
+  let emitJitter = false;
+  let jitterCount = 0;
+
+  if (now - waffle.lastJitter > jitterInterval) {
+    const distance = finishLine - startX;
+    const myProgress = distance > 0 ? (waffle.x - startX) / distance : 0;
+    const behindFactor = Math.max(0, avgProgress - myProgress + 0.18);
+
+    const nextTarget = calculateTargetSpeed(waffle.baseSpeed, waffle.currentSpeed, progress, behindFactor);
+    
+    if (Math.abs(nextTarget - waffle.currentSpeed) > waffle.baseSpeed * 1.4) {
+      emitJitter = true;
+      jitterCount = isFinalPhase ? 9 : 5;
+    }
+
+    waffle.targetSpeed = nextTarget;
+    waffle.lastJitter = now;
+  }
+
+  const speedLerp = 0.22;
+  waffle.currentSpeed += (waffle.targetSpeed - waffle.currentSpeed) * speedLerp;
+  waffle.currentSpeed += (Math.random() - 0.5) * 0.032;
+
+  const accel = 1 + progress * 0.15;
+  const move = waffle.currentSpeed * accel * dt;
+
+  waffle.phase += waffle.bobSpeed * 0.016;
+  waffle.tilt = Math.sin(waffle.phase * 0.9) * 3.5 + (waffle.currentSpeed - waffle.baseSpeed) * 0.018;
+  waffle.x += move;
+
+  return {
+    emitJitter,
+    jitterCount,
+    isFinalPhase
+  };
+}

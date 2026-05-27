@@ -1,7 +1,15 @@
 // Wafflerace - Canvas Animation
 import { initAudio, playSplash, playFinishChime } from './race-audio.js';
 import { ParticleSystem } from './race-particles.js';
-import { calculateVisualProgress } from './race-logic.js';
+import {
+  calculateVisualProgress,
+  formatDisplayName,
+  getLeaders,
+  calculateVerticalSpacing,
+  calculateAverageProgress,
+  initWaffleState,
+  updateWafflePosition
+} from './race-logic.js';
 
 (function () {
   const canvas = document.getElementById('race-canvas');
@@ -143,32 +151,21 @@ import { calculateVisualProgress } from './race-logic.js';
     // Dynamic vertical spacing so many racers still fit nicely (with some overlap allowed)
     const paddingTop = 42;
     const paddingBottom = 32;
-    const availableHeight = canvas.height - paddingTop - paddingBottom;
-    const verticalSpacing = Math.max(
-      23,
-      Math.min(36, availableHeight / Math.max(1, names.length - 1))
-    );
+    const verticalSpacing = calculateVerticalSpacing(names.length, canvas.height, paddingTop, paddingBottom);
 
     names.forEach((name, i) => {
       const multiplier =
         minMultiplier + Math.random() * (maxMultiplier - minMultiplier);
       const base = winnerSpeed * multiplier;
+      const y = paddingTop + i * verticalSpacing;
+      const spriteIndex = Math.floor(Math.random() * TOTAL_BOAT_SPRITES);
 
-      waffles.push({
-        name: name,
-        x: START_X,
-        y: paddingTop + i * verticalSpacing,
+      waffles.push(initWaffleState(name, i, {
+        startX: START_X,
+        y,
         baseSpeed: base,
-        currentSpeed: base,
-        targetSpeed: base,
-        phase: Math.random() * Math.PI * 2,
-        bobSpeed: 2.6 + Math.random() * 1.6,
-        lastJitter: 0,
-        finished: false,
-        finishTime: 0,
-        spriteIndex: Math.floor(Math.random() * TOTAL_BOAT_SPRITES),
-        tilt: 0,
-      });
+        spriteIndex
+      }));
     });
   }
 
@@ -254,10 +251,7 @@ import { calculateVisualProgress } from './race-logic.js';
     ctx.restore();
   }
 
-  function formatDisplayName(name, maxLength = 18, trimLength = 15) {
-    const text = String(name || '');
-    return text.length > maxLength ? text.slice(0, trimLength) + '...' : text;
-  }
+
 
   function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -357,8 +351,7 @@ import { calculateVisualProgress } from './race-logic.js';
     const list = document.getElementById('live-leaders-list');
     if (!container || !list || !startTime || finished) return;
 
-    // Sort by current visual position (or logical for accuracy during race)
-    const sorted = [...waffles].sort((a, b) => b.x - a.x).slice(0, 3);
+    const sorted = getLeaders(waffles, 3);
 
     list.innerHTML = '';
     sorted.forEach((w, i) => {
@@ -389,74 +382,18 @@ import { calculateVisualProgress } from './race-logic.js';
     }
     lastTime = now;
 
+    const avgProgress = calculateAverageProgress(waffles, START_X, FINISH_LINE);
+
     waffles.forEach((w) => {
       if (w.finished) return;
 
-      // === Very strong, noticeable jitter for chaotic racing ===
-      const isFinalPhase = progress > 0.82;
-      const jitterInterval = isFinalPhase
-        ? BASE_JITTER_INTERVAL * FINAL_PHASE_JITTER_MULTIPLIER +
-          Math.random() * 55
-        : BASE_JITTER_INTERVAL + Math.random() * 100;
-
-      if (now - w.lastJitter > jitterInterval) {
-        const myProgress = (w.x - START_X) / (FINISH_LINE - START_X);
-        const avgProgress =
-          waffles.reduce((sum, ww) => sum + (ww.x - START_X), 0) /
-          waffles.length /
-          (FINISH_LINE - START_X);
-        const behindFactor = Math.max(0, avgProgress - myProgress + 0.18);
-
-        let mult = 0.32 + Math.random() * 1.8;
-
-        if (behindFactor > 0.05 && Math.random() < 0.68) {
-          mult = 2.3 + Math.random() * 2.6;
-        }
-
-        if (Math.random() < 0.29) {
-          mult = 3.0 + Math.random() * 2.4;
-        }
-
-        if (Math.random() < 0.17) {
-          mult = 0.18 + Math.random() * 0.42;
-        }
-
-        // Final phase: much wilder swings
-        if (isFinalPhase) {
-          mult *= 1.35;
-          if (Math.random() < 0.45) mult = 3.8 + Math.random() * 3.2;
-        }
-
-        w.targetSpeed = w.baseSpeed * mult;
-        w.targetSpeed = Math.max(
-          w.baseSpeed * 0.12,
-          Math.min(w.baseSpeed * 6.2, w.targetSpeed)
-        );
-        w.lastJitter = now;
-
-        // Emit particles on big changes
-        if (Math.abs(w.targetSpeed - w.currentSpeed) > w.baseSpeed * 1.4) {
-          particleSystem.emit(w.x, w.y + 6, isFinalPhase ? 9 : 5);
-          if (isFinalPhase) playSplash(1.1);
+      const updateResult = updateWafflePosition(w, dt, progress, avgProgress, START_X, FINISH_LINE, now);
+      if (updateResult.emitJitter) {
+        particleSystem.emit(w.x, w.y + 6, updateResult.jitterCount);
+        if (updateResult.isFinalPhase) {
+          playSplash(1.1);
         }
       }
-
-      // Extremely fast response — changes should feel sudden and very obvious
-      const speedLerp = 0.22;
-      w.currentSpeed += (w.targetSpeed - w.currentSpeed) * speedLerp;
-
-      // High continuous noise
-      w.currentSpeed += (Math.random() - 0.5) * 0.032;
-
-      // Mild acceleration only very late
-      const accel = 1 + progress * 0.15;
-      const move = w.currentSpeed * accel * dt;
-
-      w.phase += w.bobSpeed * 0.016;
-      w.tilt =
-        Math.sin(w.phase * 0.9) * 3.5 + (w.currentSpeed - w.baseSpeed) * 0.018;
-
-      w.x += move;
     });
 
     // The race runs for the full duration.
