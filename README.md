@@ -44,15 +44,15 @@ This is a companion project to [Project Syrup](https://github.com/notfixingit3/w
 
 ## Current Status
 
-**v0.1.12 (In Progress)** — Infrastructure & Sustainability Release
+**v0.1.12** — Infrastructure & Sustainability Release
 
-This release is focused on making Wafflerace easier to run, deploy, and maintain:
+This release focuses on making Wafflerace easier to run, deploy, and maintain long-term:
 
-- First-class Docker support: Official multi-arch images (amd64 + arm64) are now published to GHCR on every release, complete with provenance, SBOM, and attestations.
-- A rolling `:dev` image is published automatically on pushes to the development branch.
-- Simplified deployment model: The compose files no longer bundle Traefik or CrowdSec. They now provide only the application plus the labels needed for an existing reverse proxy.
-- Significantly hardened release process: All version tags must come from the `dev` branch (enforced in CI).
-- Improved documentation and release tooling.
+- **Docker publishing** — Official multi-arch images (amd64 + arm64) with provenance, SBOM, and attestations are now published to GHCR on every release.
+- **Development images** — A `:dev` image (plus `sha-` tags) is automatically published on pushes to the `dev` branch.
+- **Simplified deployment** — Compose files no longer bundle Traefik or CrowdSec. They are now lightweight and designed to work with an existing reverse proxy.
+- **Release process** — All `v*` tags must come from the `dev` branch (enforced in CI).
+- **Documentation** — Significant improvements to guides and contributor experience.
 
 See the [changelog](CHANGELOG.md) for the full list of changes.
 
@@ -121,7 +121,7 @@ Visit `http://localhost:9090`.
    docker compose -f docker-compose.prod.yml up -d
    ```
 
-See the comments inside the compose files for full label examples and the **Docker Images** section above for available image tags.
+See the **Docker Images** section and the comments inside the compose files for full guidance and label examples.
 
 ---
 

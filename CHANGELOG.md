@@ -9,9 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.1.12] - 2026-??-??
+## [0.1.12] - 2026-05-??
 
 **This is an infrastructure and sustainability focused release.** The core racing experience remains stable, while the project has received major improvements in containerization, deployment model, release process, and documentation.
+
+Wafflerace 0.1.12 makes the project significantly easier and more professional to run in real environments.
+
+### Highlights
+- First-class Docker support with multi-arch images and proper supply chain security.
+- Clean "bring your own reverse proxy" deployment model.
+- Significantly improved release tooling and contributor experience.
 
 ### Added
 - Docker images are now first-class citizens:
