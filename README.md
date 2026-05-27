@@ -1,30 +1,5 @@
 <p align="center">
-  <svg width="240" height="90" viewBox="0 0 240 90" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <!-- Water / waves -->
-    <path d="M10 72 Q 40 60 70 72 Q 100 84 130 72 Q 160 60 190 72 Q 220 84 240 72" stroke="#C48A3A" stroke-width="3" fill="none"/>
-    <path d="M10 78 Q 40 68 70 78 Q 100 88 130 78 Q 160 68 190 78 Q 220 88 240 78" stroke="#A86F2E" stroke-width="2" fill="none"/>
-
-    <!-- Boat -->
-    <path d="M65 58 L 175 58 L 190 72 L 50 72 Z" fill="#3F2A1D"/>
-    <path d="M70 58 L 170 58 L 180 66 L 60 66 Z" fill="#5C4033"/>
-
-    <!-- Waffle body -->
-    <circle cx="120" cy="42" r="18" fill="#F4C95F"/>
-    <!-- Waffle grid -->
-    <path d="M105 30 L 135 30 M105 36 L 135 36 M105 42 L 135 42 M105 48 L 135 48 M105 54 L 135 54" stroke="#D4A017" stroke-width="1.5"/>
-    <path d="M108 27 L 108 57 M114 27 L 114 57 M120 27 L 120 57 M126 27 L 126 57 M132 27 L 132 57" stroke="#D4A017" stroke-width="1.5"/>
-
-    <!-- Syrup drip -->
-    <path d="M128 54 Q 132 62 129 68" stroke="#8B5A2B" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-
-    <!-- Little arms / paddles -->
-    <circle cx="102" cy="38" r="3" fill="#3F2A1D"/>
-    <circle cx="138" cy="38" r="3" fill="#3F2A1D"/>
-
-    <!-- Paddle -->
-    <line x1="145" y1="48" x2="168" y2="62" stroke="#5C4033" stroke-width="3" stroke-linecap="round"/>
-    <rect x="165" y="58" width="12" height="7" rx="1" fill="#3F2A1D" transform="rotate(25 171 61)"/>
-  </svg>
+  <img src="assets/logo.png" width="260" alt="Wafflerace logo" />
 </p>
 
 <h1 align="center">Wafflerace</h1>
