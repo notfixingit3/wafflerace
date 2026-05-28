@@ -46,12 +46,44 @@ templ History(results []db.RaceResult) {
 				</div>
 			</div>
 
+			<!-- Top Winners SVG Chart Card -->
+			<div class="card bg-base-100 shadow-xl mb-8">
+				<div class="card-body">
+					<h2 class="card-title text-xl mb-4">🏆 Top 5 Winners Win Count</h2>
+					<div id="top-winners-chart" class="w-full flex flex-col gap-3 py-2">
+						<!-- Dynamically populated by JS using clean interactive SVGs -->
+					</div>
+				</div>
+			</div>
+
+			<!-- Filters & Search Controls -->
+			<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+				<div class="form-control">
+					<label class="label"><span class="label-text font-semibold">Search Winner</span></label>
+					<input id="history-search" type="text" placeholder="Search by name..." class="input input-bordered w-full"/>
+				</div>
+				<div class="form-control">
+					<label class="label"><span class="label-text font-semibold">Filter by Duration</span></label>
+					<select id="history-filter-duration" class="select select-bordered w-full">
+						<option value="all">All Durations</option>
+						<option value="short">Short (&lt; 30s)</option>
+						<option value="medium">Medium (30s - 60s)</option>
+						<option value="long">Long (&gt; 60s)</option>
+					</select>
+				</div>
+				<div class="form-control flex justify-end items-end h-full">
+					<button id="export-csv-btn" class="btn btn-outline w-full mt-2">
+						📥 Export CSV
+					</button>
+				</div>
+			</div>
+
 			<div class="card bg-base-100 shadow-xl">
 				<div class="card-body">
 					<h2 class="card-title mb-4">All Races</h2>
 
 					<div class="overflow-x-auto">
-						<table class="table table-zebra w-full">
+						<table class="table table-zebra w-full" id="history-table">
 							<thead>
 								<tr>
 									<th>Date</th>
@@ -81,9 +113,142 @@ templ History(results []db.RaceResult) {
 				</div>
 			</div>
 
-			<div class="mt-4 text-center">
+			<div class="mt-6 text-center">
 				<a href="/" class="btn btn-ghost">← Back to Setup</a>
 			</div>
 		</div>
+
+		<script>
+			document.addEventListener('DOMContentLoaded', () => {
+				const searchInput = document.getElementById('history-search');
+				const durationSelect = document.getElementById('history-filter-duration');
+				const exportBtn = document.getElementById('export-csv-btn');
+				const tableRows = document.querySelectorAll('#history-table tbody tr');
+				const chartContainer = document.getElementById('top-winners-chart');
+
+				// 1. Live Filtering Logic
+				function filterRaces() {
+					const searchTerm = searchInput.value.toLowerCase().trim();
+					const durationFilter = durationSelect.value;
+
+					tableRows.forEach(row => {
+						const winnerNameEl = row.querySelector('td:nth-child(2)');
+						if (!winnerNameEl) return;
+						const winnerName = winnerNameEl.textContent.toLowerCase();
+						const durationText = row.querySelector('td:nth-child(3)').textContent; // e.g. "30s"
+						const durationVal = parseInt(durationText) || 0;
+
+						let matchesSearch = winnerName.includes(searchTerm);
+						let matchesDuration = true;
+
+						if (durationFilter === 'short') {
+							matchesDuration = durationVal < 30;
+						} else if (durationFilter === 'medium') {
+							matchesDuration = durationVal >= 30 && durationVal <= 60;
+						} else if (durationFilter === 'long') {
+							matchesDuration = durationVal > 60;
+						}
+
+						if (matchesSearch && matchesDuration) {
+							row.classList.remove('hidden');
+						} else {
+							row.classList.add('hidden');
+						}
+					});
+				}
+
+				if (searchInput) searchInput.addEventListener('keyup', filterRaces);
+				if (durationSelect) durationSelect.addEventListener('change', filterRaces);
+
+				// 2. CSV Export Logic
+				if (exportBtn) {
+					exportBtn.addEventListener('click', () => {
+						const headers = ['Date', 'Winner', 'Duration'];
+						const csvData = [headers.join(',')];
+
+						tableRows.forEach(row => {
+							if (!row.classList.contains('hidden')) {
+								const date = row.querySelector('td:nth-child(1)').textContent.replace(/,/g, '');
+								const winner = row.querySelector('td:nth-child(2)').textContent;
+								const duration = row.querySelector('td:nth-child(3)').textContent;
+								csvData.push(`"${date}","${winner}","${duration}"`);
+							}
+						});
+
+						const csvContent = "data:text/csv;charset=utf-8," + csvData.join("\n");
+						const encodedUri = encodeURI(csvContent);
+						const link = document.createElement("a");
+						link.setAttribute("href", encodedUri);
+						link.setAttribute("download", `wafflerace_history_${new Date().toISOString().slice(0,10)}.csv`);
+						document.body.appendChild(link);
+						link.click();
+						document.body.removeChild(link);
+					});
+				}
+
+				// 3. Dynamic Top Winners SVG Chart Rendering
+				function renderTopWinnersChart() {
+					if (!chartContainer) return;
+
+					// Count wins from visible rows
+					const winsMap = {};
+					tableRows.forEach(row => {
+						const winnerEl = row.querySelector('td:nth-child(2)');
+						if (!winnerEl) return;
+						const winner = winnerEl.textContent.trim();
+						if (winner && winner !== '—' && winner !== '') {
+							winsMap[winner] = (winsMap[winner] || 0) + 1;
+						}
+					});
+
+					// Sort and get top 5
+					const sortedWinners = Object.entries(winsMap)
+						.sort((a, b) => b[1] - a[1])
+						.slice(0, 5);
+
+					if (sortedWinners.length === 0) {
+						chartContainer.innerHTML = '<div class="text-center text-sm text-base-content/50 py-4">No data available for chart.</div>';
+						return;
+					}
+
+					const maxWins = sortedWinners[0][1];
+					chartContainer.innerHTML = '';
+
+					sortedWinners.forEach(([name, count]) => {
+						// Render bar percentage (max 80% width)
+						const percent = maxWins > 0 ? (count / maxWins) * 80 : 0;
+						
+						const rowDiv = document.createElement('div');
+						rowDiv.className = 'flex items-center gap-4 text-sm';
+
+						const labelSpan = document.createElement('span');
+						labelSpan.className = 'w-24 font-semibold truncate text-right';
+						labelSpan.textContent = name;
+
+						const barWrapper = document.createElement('div');
+						barWrapper.className = 'flex-1 bg-base-200 h-8 rounded-lg overflow-hidden relative border border-base-300';
+
+						const fillDiv = document.createElement('div');
+						fillDiv.className = 'bg-primary h-full transition-all duration-1000 ease-out flex items-center justify-end px-3 font-bold text-primary-content';
+						fillDiv.style.width = '0%'; // Start at 0% for transition
+						
+						const countSpan = document.createElement('span');
+						countSpan.textContent = `${count} win${count > 1 ? 's' : ''}`;
+						fillDiv.appendChild(countSpan);
+
+						barWrapper.appendChild(fillDiv);
+						rowDiv.append(labelSpan, barWrapper);
+						chartContainer.appendChild(rowDiv);
+
+						// Animate width
+						setTimeout(() => {
+							fillDiv.style.width = `${percent + 15}%`;
+						}, 50);
+					});
+				}
+
+				renderTopWinnersChart();
+			});
+		</script>
 	}
 }

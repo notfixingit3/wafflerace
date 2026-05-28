@@ -10,6 +10,21 @@ import {
   initWaffleState,
   updateWafflePosition
 } from './race-logic.js';
+import {
+  drawLoadingProgressBar,
+  drawParallaxBackgrounds,
+  drawFinishLine,
+  drawBoat
+} from './race-render.js';
+import {
+  initSpectatorMode,
+  initFullscreen,
+  bindControlButtons,
+  updateUIForRaceStart,
+  updateUIForPeeMode,
+  updateUIForFinish,
+  toggleControlsVisibility
+} from './race-ui.js';
 
 (function () {
   const canvas = document.getElementById('race-canvas');
@@ -126,10 +141,8 @@ import {
     particleSystem.clear();
 
     // Randomly pick 3 distinct backgrounds for parallax (far / mid / water)
-    // Only use images that actually loaded successfully for this collection
     const validBgs = bgImages.filter((img) => img.complete && img.width > 0);
     if (validBgs.length < 3) {
-      // Fallback: duplicate what we have or use solid color later in draw()
       while (validBgs.length < 3 && bgImages.length > 0) {
         validBgs.push(bgImages[validBgs.length % bgImages.length]);
       }
@@ -142,15 +155,12 @@ import {
     ];
 
     const distance = FINISH_LINE - START_X;
-
-    // Winner (fastest) should cross the finish line right at the end of the timer
     const winnerSpeed = distance / duration;
 
-    // Everyone else is slower than the winner (creates uncertainty who will win)
+    // Everyone else is slower than the winner
     const minMultiplier = 0.7;
     const maxMultiplier = 0.97;
 
-    // Dynamic vertical spacing so many racers still fit nicely (with some overlap allowed)
     const paddingTop = 42;
     const paddingBottom = 32;
     const verticalSpacing = calculateVerticalSpacing(names.length, canvas.height, paddingTop, paddingBottom);
@@ -171,90 +181,6 @@ import {
     });
   }
 
-  function drawBoat(ctx, x, y, bob, name, spriteIndex, tilt) {
-    const img = boatImages[spriteIndex];
-    if (!img || !img.complete) {
-      ctx.save();
-      ctx.translate(x, y + bob);
-      ctx.fillStyle = '#f4c95f';
-      ctx.beginPath();
-      ctx.arc(0, 0, 18, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
-      return;
-    }
-
-    ctx.save();
-    ctx.translate(x, y + bob);
-    ctx.rotate((tilt || 0) * 0.035); // subtle rocking
-
-    const targetHeight = 72;
-    const scale = targetHeight / img.height;
-    const drawWidth = img.width * scale;
-    const drawHeight = img.height * scale;
-
-    ctx.drawImage(img, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
-
-    // Reactive flag - flutters more with tilt/speed
-    const flagColor = '#c48a3a';
-    const outlineColor = '#8b5a2b';
-    const attachX = -drawWidth / 2 + 6;
-    const attachY = -8 + (tilt || 0) * 0.4;
-
-    ctx.fillStyle = flagColor;
-    ctx.beginPath();
-    ctx.moveTo(attachX, attachY - 4);
-    ctx.quadraticCurveTo(
-      attachX - 14 - (tilt || 0) * 0.3,
-      attachY - 8,
-      attachX - 34,
-      attachY - 1
-    );
-    ctx.quadraticCurveTo(attachX - 33, attachY + 4, attachX - 34, attachY + 7);
-    ctx.quadraticCurveTo(
-      attachX - 14 - (tilt || 0) * 0.3,
-      attachY + 6,
-      attachX,
-      attachY + 5
-    );
-    ctx.closePath();
-    ctx.fill();
-
-    ctx.strokeStyle = outlineColor;
-    ctx.lineWidth = 0.9;
-    ctx.beginPath();
-    ctx.moveTo(attachX, attachY - 4);
-    ctx.quadraticCurveTo(
-      attachX - 14 - (tilt || 0) * 0.3,
-      attachY - 8,
-      attachX - 34,
-      attachY - 1
-    );
-    ctx.quadraticCurveTo(attachX - 33, attachY + 4, attachX - 34, attachY + 7);
-    ctx.quadraticCurveTo(
-      attachX - 14 - (tilt || 0) * 0.3,
-      attachY + 6,
-      attachX,
-      attachY + 5
-    );
-    ctx.stroke();
-
-    if (nameDisplayMode !== 'hidden') {
-      ctx.fillStyle = '#3f2a1d';
-      ctx.font = '8px system-ui, sans-serif';
-      ctx.textAlign = 'right';
-      let displayName = name;
-      if (nameDisplayMode === 'short' && name.length > 9) {
-        displayName = name.slice(0, 8) + '…';
-      }
-      ctx.fillText(displayName, attachX - 2, attachY + 2);
-    }
-
-    ctx.restore();
-  }
-
-
-
   function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -270,67 +196,19 @@ import {
 
     // Show loading overlay until assets are ready
     if (loadProgress < 0.999 && !startTime) {
-      ctx.fillStyle = 'rgba(20, 30, 40, 0.85)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = '#f4e9d8';
-      ctx.font = '600 15px system-ui, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(
-        'Loading premium boats & river...',
-        canvas.width / 2,
-        canvas.height / 2 - 8
-      );
-      const barW = 260;
-      const barX = (canvas.width - barW) / 2;
-      ctx.fillStyle = '#3f2a1d';
-      ctx.fillRect(barX, canvas.height / 2 + 12, barW, 4);
-      ctx.fillStyle = '#c48a3a';
-      ctx.fillRect(barX, canvas.height / 2 + 12, barW * loadProgress, 4);
+      drawLoadingProgressBar(ctx, canvas.width, canvas.height, loadProgress);
       return;
     }
 
     // === Parallax Background Layers (far → near) ===
-    if (startTime && parallaxLayers.length === 3) {
-      parallaxLayers.forEach((layer) => {
-        if (!layer.img || !layer.img.complete) return;
-        const speed = layer.speed;
-        const offset =
-          (((Date.now() - startTime) / 1000) * speed) % layer.img.width;
-        ctx.drawImage(layer.img, -offset, 0, layer.img.width, canvas.height);
-        ctx.drawImage(
-          layer.img,
-          -offset + layer.img.width,
-          0,
-          layer.img.width,
-          canvas.height
-        );
-      });
-    } else {
-      ctx.fillStyle = '#a8c8dc';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-    }
+    drawParallaxBackgrounds(ctx, canvas.width, canvas.height, parallaxLayers, startTime);
 
     // Particles (syrup drips / splashes)
     particleSystem.update();
     particleSystem.draw(ctx);
 
     // Finish line (late reveal)
-    const finishVisibility = Math.max(0, (progress - 0.72) / 0.28);
-    if (finishVisibility > 0.05) {
-      ctx.save();
-      ctx.globalAlpha = Math.min(1, finishVisibility);
-      ctx.strokeStyle = '#3f2a1d';
-      ctx.lineWidth = 4;
-      ctx.beginPath();
-      ctx.moveTo(FINISH_LINE, 30);
-      ctx.lineTo(FINISH_LINE, canvas.height - 30);
-      ctx.stroke();
-      ctx.fillStyle = '#3f2a1d';
-      ctx.font = 'bold 14px system-ui, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('FINISH', FINISH_LINE, 22);
-      ctx.restore();
-    }
+    drawFinishLine(ctx, canvas.height, FINISH_LINE, progress);
 
     // Boats
     waffles.forEach((w) => {
@@ -341,7 +219,7 @@ import {
 
       const visualX =
         START_X + (FINISH_LINE - START_X) * Math.max(0, Math.min(1, visProg));
-      drawBoat(ctx, visualX, w.y, bob, w.name, w.spriteIndex, w.tilt);
+      drawBoat(ctx, visualX, w.y, bob, w.name, w.spriteIndex, w.tilt, boatImages, nameDisplayMode);
     });
 
     // Update live leaderboard (item 8)
@@ -369,13 +247,12 @@ import {
   }
 
   function update() {
-    if (!startTime || finished || paused) return;
+    if (finished || paused || !startTime) return;
 
     const now = Date.now();
     const elapsed = (now - startTime) / 1000;
     const progress = Math.min(elapsed / duration, 1);
 
-    // Calculate delta time in seconds for frame-rate independent movement
     let dt = 0;
     if (lastTime !== null) {
       dt = (now - lastTime) / 1000;
@@ -432,7 +309,8 @@ import {
 
     list.innerHTML = '';
     container.classList.remove('hidden');
-    document.getElementById('start-btn').disabled = true;
+    
+    updateUIForFinish();
 
     const top3 = results.slice(0, 3);
     const winner = top3[0];
@@ -579,9 +457,6 @@ import {
         saveRaceToHistory(results[0].name);
       }
       showRaceHistory();
-
-      const runAgainBtn = document.getElementById('run-again-btn');
-      if (runAgainBtn) runAgainBtn.classList.remove('hidden');
     }, 2500);
   }
 
@@ -621,8 +496,6 @@ import {
       }, 1400);
     });
   }
-
-
 
   function updateTimer() {
     if (!startTime || finished) return;
@@ -673,24 +546,16 @@ import {
     const timerEl = document.getElementById('timer');
     if (timerEl) timerEl.textContent = duration.toFixed(1) + 's';
 
-    document.getElementById('start-btn').disabled = true;
-    const peeBtn = document.getElementById('pee-btn');
-    if (peeBtn) peeBtn.classList.remove('hidden');
-
+    updateUIForRaceStart();
     loop();
   }
 
   function togglePee() {
-    const peeBtn = document.getElementById('pee-btn');
-    if (!peeBtn) return;
-
     paused = !paused;
+    updateUIForPeeMode(paused);
 
     if (paused) {
       pauseStartTime = Date.now();
-      peeBtn.textContent = 'Resume Race';
-      peeBtn.classList.remove('btn-warning');
-      peeBtn.classList.add('btn-success');
     } else {
       // Adjust startTime to account for pause duration
       if (pauseStartTime) {
@@ -698,9 +563,6 @@ import {
         startTime += pauseDuration;
         pauseStartTime = null;
       }
-      peeBtn.textContent = 'I need to pee';
-      peeBtn.classList.remove('btn-success');
-      peeBtn.classList.add('btn-warning');
       loop(); // restart the animation loop
     }
   }
@@ -713,21 +575,8 @@ import {
   }
 
   function toggleHideControls() {
-    const controls = document.getElementById('race-controls');
-    const nameOptions = document.getElementById('name-options');
-    const hideBtn = document.getElementById('hide-controls-btn');
-
     controlsHidden = !controlsHidden;
-
-    if (controlsHidden) {
-      if (controls) controls.style.display = 'none';
-      if (nameOptions) nameOptions.style.display = 'none';
-      if (hideBtn) hideBtn.textContent = 'Show Controls';
-    } else {
-      if (controls) controls.style.display = '';
-      if (nameOptions) nameOptions.style.display = '';
-      if (hideBtn) hideBtn.textContent = 'Hide Controls';
-    }
+    toggleControlsVisibility(controlsHidden);
   }
 
   function saveRaceToHistory(winnerName) {
@@ -747,32 +596,6 @@ import {
       console.warn('[Wafflerace] Unable to save local history:', e);
     }
   }
-
-  window.copyWinner = copyWinner;
-  window.copyFullResults = copyFullResults;
-  window.setNameDisplay = setNameDisplay;
-  window.RACE_ASSETS = { boatImages, bgImages };
-  window.RACE_STATE = {
-    get waffles() { return waffles; },
-    get parallaxLayers() { return parallaxLayers; }
-  };
-  window.RACE_DEBUG = {
-    teleportToFinish(index) {
-      if (waffles[index]) {
-        waffles[index].x = FINISH_LINE - 10;
-        console.log(`[Wafflerace Debug] Teleported waffle ${index} (${waffles[index].name}) close to finish line.`);
-      }
-    },
-    triggerFinish() {
-      if (startTime && !finished) {
-        startTime = Date.now() - (duration * 1000) - 100;
-        console.log(`[Wafflerace Debug] Triggered immediate race finish.`);
-      }
-    },
-    getFPS() {
-      return lastFps;
-    }
-  };
 
   function showRaceHistory() {
     const section = document.getElementById('history-section');
@@ -898,60 +721,54 @@ import {
       console.error('[Wafflerace] Failed to initialize race:', err);
     }
 
-    const startBtn = document.getElementById('start-btn');
-    startBtn.addEventListener('click', startRace);
+    // Bind event controllers
+    bindControlButtons({
+      onStart: startRace,
+      onPee: togglePee,
+      onToggleControls: toggleHideControls,
+      onRunAgain: runAgainWithSameNames
+    });
 
-    const peeBtn = document.getElementById('pee-btn');
-    if (peeBtn) {
-      peeBtn.addEventListener('click', togglePee);
-    }
+    // Check spectator mode
+    initSpectatorMode(window.IS_SPECTATOR);
 
-    const hideBtn = document.getElementById('hide-controls-btn');
-    if (hideBtn) {
-      hideBtn.addEventListener('click', toggleHideControls);
-    }
-
-    const runAgainBtn = document.getElementById('run-again-btn');
-    if (runAgainBtn) {
-      runAgainBtn.addEventListener('click', runAgainWithSameNames);
-    }
-
-    // Spectator mode - hide controls and start button
-    if (window.IS_SPECTATOR) {
-      const startBtn = document.getElementById('start-btn');
-      const peeBtn = document.getElementById('pee-btn');
-      const controls = document.getElementById('race-controls');
-      const nameOptions = document.getElementById('name-options');
-
-      if (startBtn) startBtn.style.display = 'none';
-      if (peeBtn) peeBtn.style.display = 'none';
-      if (controls) controls.style.display = 'none';
-      if (nameOptions) nameOptions.style.display = 'none';
-    }
-
-    // Fullscreen button
-    const fsBtn = document.getElementById('fullscreen-btn');
-    if (fsBtn) {
-      fsBtn.addEventListener('click', () => {
-        const container = canvas.parentElement; // the card-body
-        if (!document.fullscreenElement) {
-          container.requestFullscreen?.() ||
-            container.webkitRequestFullscreen?.() ||
-            container.msRequestFullscreen?.();
-        } else {
-          document.exitFullscreen?.();
-        }
-      });
-    }
+    // Setup fullscreen toggles
+    initFullscreen(canvas);
 
     // Auto-start after short delay (nice for OBS / demos)
     setTimeout(() => {
       if (!startTime) {
-        // Uncomment the next line if you want auto-start
         // startRace();
       }
     }, 600);
   }
+
+  // Exports for templates and test hooks
+  window.copyWinner = copyWinner;
+  window.copyFullResults = copyFullResults;
+  window.setNameDisplay = setNameDisplay;
+  window.RACE_ASSETS = { boatImages, bgImages };
+  window.RACE_STATE = {
+    get waffles() { return waffles; },
+    get parallaxLayers() { return parallaxLayers; }
+  };
+  window.RACE_DEBUG = {
+    teleportToFinish(index) {
+      if (waffles[index]) {
+        waffles[index].x = FINISH_LINE - 10;
+        console.log(`[Wafflerace Debug] Teleported waffle ${index} (${waffles[index].name}) close to finish line.`);
+      }
+    },
+    triggerFinish() {
+      if (startTime && !finished) {
+        startTime = Date.now() - (duration * 1000) - 100;
+        console.log(`[Wafflerace Debug] Triggered immediate race finish.`);
+      }
+    },
+    getFPS() {
+      return lastFps;
+    }
+  };
 
   init();
 })();
