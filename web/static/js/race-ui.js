@@ -47,7 +47,12 @@ export function initFullscreen(canvas) {
 /**
  * Binds DOM click listeners to the race action buttons.
  */
-export function bindControlButtons({ onStart, onPee, onToggleControls, onRunAgain }) {
+export function bindControlButtons({
+  onStart,
+  onPee,
+  onToggleControls,
+  onRunAgain,
+}) {
   const startBtn = document.getElementById('start-btn');
   if (startBtn) {
     startBtn.addEventListener('click', onStart);
@@ -125,7 +130,14 @@ export function toggleControlsVisibility(visible) {
   const nameOptions = document.getElementById('name-options');
   const hideBtn = document.getElementById('hide-controls-btn');
 
-  const els = [startBtn, peeBtn, runAgainBtn, fullscreenBtn, homeBtn, nameOptions].filter(Boolean);
+  const els = [
+    startBtn,
+    peeBtn,
+    runAgainBtn,
+    fullscreenBtn,
+    homeBtn,
+    nameOptions,
+  ].filter(Boolean);
 
   if (visible) {
     els.forEach((el) => el.classList.remove('hidden'));
@@ -134,7 +146,8 @@ export function toggleControlsVisibility(visible) {
     els.forEach((el) => {
       // Don't hide buttons that are naturally hidden at this stage
       if (el === peeBtn && peeBtn.classList.contains('hidden')) return;
-      if (el === runAgainBtn && runAgainBtn.classList.contains('hidden')) return;
+      if (el === runAgainBtn && runAgainBtn.classList.contains('hidden'))
+        return;
       el.classList.add('hidden');
     });
     if (hideBtn) hideBtn.textContent = 'Show Controls';

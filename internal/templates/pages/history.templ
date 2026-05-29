@@ -9,7 +9,7 @@ import (
 
 templ History(results []db.RaceResult) {
 	@templates.Layout("Race History & Analytics") {
-		<div class="max-w-6xl mx-auto p-6">
+		<div class="max-w-6xl mx-auto p-6 animate-fade-in-up">
 			<div class="flex justify-between items-center mb-6">
 				<h1 class="text-3xl font-bold">Race History & Analytics</h1>
 				<a href="/" class="btn btn-primary">New Race</a>
@@ -17,12 +17,12 @@ templ History(results []db.RaceResult) {
 
 			<!-- Stats Cards -->
 			<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-				<div class="stat bg-base-100 shadow">
-					<div class="stat-title">Total Races</div>
+				<div class="stat premium-card shadow-xl">
+					<div class="stat-title text-base-content/70">Total Races</div>
 					<div class="stat-value">{ fmt.Sprintf("%d", len(results)) }</div>
 				</div>
-				<div class="stat bg-base-100 shadow">
-					<div class="stat-title">Avg Duration</div>
+				<div class="stat premium-card shadow-xl">
+					<div class="stat-title text-base-content/70">Avg Duration</div>
 					<div class="stat-value">
 						{ func() string {
 							if len(results) == 0 { return "0s" }
@@ -35,9 +35,9 @@ templ History(results []db.RaceResult) {
 						}() }
 					</div>
 				</div>
-				<div class="stat bg-base-100 shadow">
-					<div class="stat-title">Most Recent</div>
-					<div class="stat-value text-lg">
+				<div class="stat premium-card shadow-xl">
+					<div class="stat-title text-base-content/70">Most Recent</div>
+					<div class="stat-value text-xl font-bold">
 						{ func() string {
 							if len(results) == 0 { return "—" }
 							return results[0].WinnerName
@@ -46,13 +46,10 @@ templ History(results []db.RaceResult) {
 				</div>
 			</div>
 
-			<!-- Top Winners SVG Chart Card -->
-			<div class="card bg-base-100 shadow-xl mb-8">
-				<div class="card-body">
-					<h2 class="card-title text-xl mb-4">🏆 Top 5 Winners Win Count</h2>
-					<div id="top-winners-chart" class="w-full flex flex-col gap-3 py-2">
-						<!-- Dynamically populated by JS using clean interactive SVGs -->
-					</div>
+			<div class="premium-card mb-8">
+				<h2 class="card-title text-xl mb-4">🏆 Top 5 Winners Win Count</h2>
+				<div id="top-winners-chart" class="w-full flex flex-col gap-3 py-2">
+					<!-- Dynamically populated by JS using clean interactive SVGs -->
 				</div>
 			</div>
 
@@ -78,9 +75,8 @@ templ History(results []db.RaceResult) {
 				</div>
 			</div>
 
-			<div class="card bg-base-100 shadow-xl">
-				<div class="card-body">
-					<h2 class="card-title mb-4">All Races</h2>
+			<div class="premium-card">
+				<h2 class="card-title mb-4">All Races</h2>
 
 					<div class="overflow-x-auto">
 						<table class="table table-zebra w-full" id="history-table">
@@ -110,7 +106,6 @@ templ History(results []db.RaceResult) {
 							No races yet. Go run one!
 						</div>
 					}
-				</div>
 			</div>
 
 			<div class="mt-6 text-center">

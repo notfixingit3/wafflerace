@@ -9,7 +9,7 @@ import (
 
 templ Race(names []string, duration int) {
 	@templates.Layout("Race in Progress") {
-		<div class="max-w-6xl mx-auto p-6">
+		<div class="max-w-6xl mx-auto p-6 animate-fade-in-up">
 			<div class="flex justify-between items-center mb-4">
 				<h1 class="text-3xl font-bold">The Great Waffle Race</h1>
 				<div id="timer-display" class="text-right">
@@ -18,10 +18,8 @@ templ Race(names []string, duration int) {
 				</div>
 			</div>
 
-			<div class="card bg-base-100 shadow-xl mb-6">
-				<div class="card-body p-4">
-					<canvas id="race-canvas" width="1100" height="420" class="w-full border border-base-300 rounded-lg bg-[#e0f0ff]"></canvas>
-				</div>
+			<div class="premium-card mb-6">
+				<canvas id="race-canvas" width="1100" height="420" class="w-full border border-base-300/40 rounded-xl bg-[#e0f0ff]"></canvas>
 			</div>
 
 			<!-- Live Top 3 Sidebar -->
@@ -94,11 +92,9 @@ templ Race(names []string, duration int) {
 					</div>
 				</div>
 
-				<div class="card bg-base-100 shadow-2xl border border-base-300">
-					<div class="card-body">
-						<h2 class="card-title text-2xl justify-center mb-4">Final Standings</h2>
-						<div id="results-list" class="space-y-3"></div>
-					</div>
+				<div class="premium-card">
+					<h2 class="card-title text-2xl justify-center mb-4">Final Standings</h2>
+					<div id="results-list" class="space-y-3"></div>
 				</div>
 
 				<div class="flex flex-wrap gap-3 justify-center mt-6">

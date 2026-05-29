@@ -2,8 +2,6 @@
  * Wafflerace - Canvas Rendering Module
  */
 
-import { calculateVisualProgress } from './race-logic.js';
-
 /**
  * Draws the loading preloader progress bar.
  */
@@ -13,11 +11,7 @@ export function drawLoadingProgressBar(ctx, width, height, loadProgress) {
   ctx.fillStyle = '#f4e9d8';
   ctx.font = '600 15px system-ui, sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText(
-    'Loading premium waffles & river...',
-    width / 2,
-    height / 2 - 8
-  );
+  ctx.fillText('Loading premium waffles & river...', width / 2, height / 2 - 8);
 
   const barW = 260;
   const barX = (width - barW) / 2;
@@ -31,21 +25,30 @@ export function drawLoadingProgressBar(ctx, width, height, loadProgress) {
  * Draws parallax background layers based on current progress.
  * If transparent mode (OBS overlay) is active, skips drawing to keep canvas transparent.
  */
-export function drawParallaxBackgrounds(ctx, width, height, parallaxLayers, startTime) {
+export function drawParallaxBackgrounds(
+  ctx,
+  width,
+  height,
+  parallaxLayers,
+  startTime
+) {
   const params = new URLSearchParams(window.location.search);
-  const isTransparent = params.get('theme') === 'obs' || params.get('transparent') === '1';
+  const isTransparent =
+    params.get('theme') === 'obs' || params.get('transparent') === '1';
 
   if (isTransparent) {
     // Skip drawing backgrounds to keep canvas transparent for OBS browser overlays
     return;
   }
 
-  if (startTime && parallaxLayers.length === 3) {
+  if (parallaxLayers.length === 3) {
     parallaxLayers.forEach((layer) => {
-      if (!layer.img || !layer.img.complete) return;
+      if (!layer.img || !layer.img.complete || layer.img.naturalWidth === 0)
+        return;
       const speed = layer.speed;
-      const offset =
-        (((Date.now() - startTime) / 1000) * speed) % layer.img.width;
+      const offset = startTime
+        ? (((Date.now() - startTime) / 1000) * speed) % layer.img.width
+        : 0;
       ctx.drawImage(layer.img, -offset, 0, layer.img.width, height);
       ctx.drawImage(
         layer.img,
@@ -87,9 +90,19 @@ export function drawFinishLine(ctx, height, finishLineX, progress) {
  * Draws an individual waffle boat, its tilt, rocking, and flag.
  * Displays the pre-calculated displayName parameter.
  */
-export function drawBoat(ctx, x, y, bob, displayName, spriteIndex, tilt, boatImages, nameDisplayMode) {
+export function drawBoat(
+  ctx,
+  x,
+  y,
+  bob,
+  displayName,
+  spriteIndex,
+  tilt,
+  boatImages,
+  nameDisplayMode
+) {
   const img = boatImages[spriteIndex];
-  if (!img || !img.complete) {
+  if (!img || !img.complete || img.naturalWidth === 0) {
     ctx.save();
     ctx.translate(x, y + bob);
     ctx.fillStyle = '#f4c95f';

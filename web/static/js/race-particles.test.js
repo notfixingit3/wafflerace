@@ -15,7 +15,7 @@ describe('ParticleSystem', () => {
   it('emits standard particles on call', () => {
     system.emit(100, 200, 5);
     expect(system.particles).toHaveLength(5);
-    
+
     // Check structure of first particle
     const p = system.particles[0];
     expect(p).toHaveProperty('x');
@@ -34,7 +34,7 @@ describe('ParticleSystem', () => {
   it('emits winner confetti', () => {
     system.emitWinnerConfetti(300, 150);
     expect(system.particles).toHaveLength(80);
-    
+
     const p = system.particles[0];
     expect(p.color).toMatch(/^#f[ad]/); // either #facc15 or #fde047
   });
@@ -60,13 +60,13 @@ describe('ParticleSystem', () => {
 
   it('draws particles on canvas context', () => {
     system.emit(100, 200, 2);
-    
+
     // Mock the 2D canvas context
     const mockCtx = {
       beginPath: vi.fn(),
       arc: vi.fn(),
       fill: vi.fn(),
-      fillStyle: ''
+      fillStyle: '',
     };
 
     system.draw(mockCtx);

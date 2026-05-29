@@ -4,9 +4,8 @@ import "github.com/notfixingit3/wafflerace/internal/templates"
 
 templ Setup() {
 	@templates.Layout("Start a Race") {
-		<div class="max-w-2xl mx-auto p-6">
-			<div class="card bg-base-100 shadow-xl mt-8">
-				<div class="card-body">
+		<div class="max-w-2xl mx-auto p-6 animate-fade-in-up">
+			<div class="premium-card mt-8">
 					<h2 class="card-title text-3xl mb-2">Start a New Race</h2>
 					<p class="text-base-content/70 mb-6">Enter names below (one per line). The waffles will race!</p>
 
@@ -126,7 +125,6 @@ templ Setup() {
 							</button>
 						</div>
 					</form>
-				</div>
 			</div>
 
 			<div class="mt-8 text-center text-sm text-base-content/60">

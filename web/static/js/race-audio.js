@@ -61,43 +61,59 @@ export function initAudio() {
 export function playSplash(intensity = 1) {
   if (!audioCtx) return;
   const now = audioCtx.currentTime;
-  if (now - lastSplashTime < 0.06) return; // throttle
+  if (now - lastSplashTime < 0.28) return; // throttle to prevent annoying repetitive buzz
   lastSplashTime = now;
 
-  const osc = audioCtx.createOscillator();
-  osc.type = 'sawtooth';
-  osc.frequency.value = 180 + Math.random() * 90;
+  try {
+    // 1. Soft bubble component (sine sweep)
+    const osc = audioCtx.createOscillator();
+    osc.type = 'sine';
+    const startFreq = 130 + Math.random() * 40;
+    osc.frequency.setValueAtTime(startFreq, now);
+    osc.frequency.exponentialRampToValueAtTime(45, now + 0.12);
 
-  const noise = audioCtx.createBufferSource();
-  const buffer = audioCtx.createBuffer(
-    1,
-    audioCtx.sampleRate * 0.6,
-    audioCtx.sampleRate
-  );
-  const data = buffer.getChannelData(0);
-  for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
-  noise.buffer = buffer;
+    const oscGain = audioCtx.createGain();
+    oscGain.gain.setValueAtTime(0.01 * intensity, now);
+    oscGain.gain.linearRampToValueAtTime(0.0001, now + 0.12);
 
-  const filter = audioCtx.createBiquadFilter();
-  filter.type = 'lowpass';
-  filter.frequency.value = 650 + intensity * 180;
+    osc.connect(oscGain);
+    oscGain.connect(audioCtx.destination);
 
-  const gain = audioCtx.createGain();
-  gain.gain.value = 0.035 * intensity;
+    // 2. High-frequency splash component (noise sweep)
+    const noise = audioCtx.createBufferSource();
+    const buffer = audioCtx.createBuffer(
+      1,
+      audioCtx.sampleRate * 0.18, // shorter duration
+      audioCtx.sampleRate
+    );
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < data.length; i++) {
+      data[i] = Math.random() * 2 - 1;
+    }
+    noise.buffer = buffer;
 
-  const decay = audioCtx.createGain();
-  decay.gain.value = 1;
-  decay.gain.linearRampToValueAtTime(0.0001, now + 0.45);
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.Q.value = 3.0; // tighter resonance for water color
+    const startFilterFreq = 650 + Math.random() * 180;
+    filter.frequency.setValueAtTime(startFilterFreq, now);
+    filter.frequency.exponentialRampToValueAtTime(140, now + 0.15);
 
-  osc.connect(filter);
-  noise.connect(filter);
-  filter.connect(gain);
-  gain.connect(decay);
-  decay.connect(audioCtx.destination);
+    const noiseGain = audioCtx.createGain();
+    noiseGain.gain.setValueAtTime(0.006 * intensity, now);
+    noiseGain.gain.linearRampToValueAtTime(0.0001, now + 0.15);
 
-  osc.start(now);
-  noise.start(now);
-  osc.stop(now + 0.6);
+    noise.connect(filter);
+    filter.connect(noiseGain);
+    noiseGain.connect(audioCtx.destination);
+
+    osc.start(now);
+    noise.start(now);
+    osc.stop(now + 0.18);
+    noise.stop(now + 0.18);
+  } catch (e) {
+    // Ignore audio context issues
+  }
 }
 
 export function playFinishChime() {

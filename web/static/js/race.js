@@ -8,13 +8,13 @@ import {
   calculateVerticalSpacing,
   calculateAverageProgress,
   initWaffleState,
-  updateWafflePosition
+  updateWafflePosition,
 } from './race-logic.js';
 import {
   drawLoadingProgressBar,
   drawParallaxBackgrounds,
   drawFinishLine,
-  drawBoat
+  drawBoat,
 } from './race-render.js';
 import {
   initSpectatorMode,
@@ -23,7 +23,7 @@ import {
   updateUIForRaceStart,
   updateUIForPeeMode,
   updateUIForFinish,
-  toggleControlsVisibility
+  toggleControlsVisibility,
 } from './race-ui.js';
 
 (function () {
@@ -48,36 +48,100 @@ import {
   let loadedAssetsCount = 0;
 
   // === Configuration (centralized for maintainability) ===
-  const TOTAL_BOAT_SPRITES = 50;
-  const MAX_BG_IMAGES = 40; // supports default (20) + nature (30) + future collections
-  const totalAssets = TOTAL_BOAT_SPRITES + MAX_BG_IMAGES;
+  const COLLECTION_LIMITS = {
+    boats: {
+      default: 50,
+      'flags-of-us': 50,
+      'flags-of-world': 5,
+    },
+    backgrounds: {
+      default: 20,
+      nature: 5,
+    },
+  };
 
-  // Jitter behavior
-  const BASE_JITTER_INTERVAL = 90;
-  const FINAL_PHASE_JITTER_MULTIPLIER = 0.6; // more frequent in final phase
+  const boatCollection = window.RACE_BOAT_COLLECTION || 'default';
+  const bgCollection = window.RACE_BACKGROUND_COLLECTION || 'default';
+
+  const TOTAL_BOAT_SPRITES = COLLECTION_LIMITS.boats[boatCollection] || 50;
+  const MAX_BG_IMAGES = COLLECTION_LIMITS.backgrounds[bgCollection] || 20;
+  const totalAssets = TOTAL_BOAT_SPRITES + MAX_BG_IMAGES;
 
   // === AI-Generated Boat Sprites (50 right-facing variants) ===
   const boatImages = [];
   const FLAGS_OF_US_STATES = [
-    'alabama','alaska','arizona','arkansas','california','colorado','connecticut','delaware',
-    'florida','georgia','hawaii','idaho','illinois','indiana','iowa','kansas','kentucky',
-    'louisiana','maine','maryland','massachusetts','michigan','minnesota','mississippi',
-    'missouri','montana','nebraska','nevada','new-hampshire','new-jersey','new-mexico',
-    'new-york','north-carolina','north-dakota','ohio','oklahoma','oregon','pennsylvania',
-    'rhode-island','south-carolina','south-dakota','tennessee','texas','utah','vermont',
-    'virginia','washington','west-virginia','wisconsin','wyoming'
+    'alabama',
+    'alaska',
+    'arizona',
+    'arkansas',
+    'california',
+    'colorado',
+    'connecticut',
+    'delaware',
+    'florida',
+    'georgia',
+    'hawaii',
+    'idaho',
+    'illinois',
+    'indiana',
+    'iowa',
+    'kansas',
+    'kentucky',
+    'louisiana',
+    'maine',
+    'maryland',
+    'massachusetts',
+    'michigan',
+    'minnesota',
+    'mississippi',
+    'missouri',
+    'montana',
+    'nebraska',
+    'nevada',
+    'new-hampshire',
+    'new-jersey',
+    'new-mexico',
+    'new-york',
+    'north-carolina',
+    'north-dakota',
+    'ohio',
+    'oklahoma',
+    'oregon',
+    'pennsylvania',
+    'rhode-island',
+    'south-carolina',
+    'south-dakota',
+    'tennessee',
+    'texas',
+    'utah',
+    'vermont',
+    'virginia',
+    'washington',
+    'west-virginia',
+    'wisconsin',
+    'wyoming',
   ];
 
   const FLAGS_OF_WORLD_FIRST = [
-    'india', 'china', 'united-states', 'indonesia', 'pakistan'
+    'india',
+    'china',
+    'united-states',
+    'indonesia',
+    'pakistan',
   ];
 
   function getBoatBaseName(collection, index) {
     if (collection === 'flags-of-us') {
-      return FLAGS_OF_US_STATES[index - 1] || `boat-right-${String(index).padStart(2, '0')}`;
+      return (
+        FLAGS_OF_US_STATES[index - 1] ||
+        `boat-right-${String(index).padStart(2, '0')}`
+      );
     }
     if (collection === 'flags-of-world') {
-      return FLAGS_OF_WORLD_FIRST[index - 1] || `boat-right-${String(index).padStart(2, '0')}`;
+      return (
+        FLAGS_OF_WORLD_FIRST[index - 1] ||
+        `boat-right-${String(index).padStart(2, '0')}`
+      );
     }
     return `boat-right-${String(index).padStart(2, '0')}`;
   }
@@ -91,6 +155,9 @@ import {
 
       const onAssetLoad = () => {
         loadedAssetsCount++;
+        if (typeof draw === 'function') {
+          draw();
+        }
       };
 
       img.src = `/assets/boats/collections/${collection}/webp/${base}.webp`;
@@ -120,6 +187,9 @@ import {
 
       const onAssetLoad = () => {
         loadedAssetsCount++;
+        if (typeof draw === 'function') {
+          draw();
+        }
       };
 
       img.src = `/assets/backgrounds/collections/${collection}/webp/${base}.webp`;
@@ -173,7 +243,12 @@ import {
 
     const paddingTop = 42;
     const paddingBottom = 32;
-    const verticalSpacing = calculateVerticalSpacing(names.length, canvas.height, paddingTop, paddingBottom);
+    const verticalSpacing = calculateVerticalSpacing(
+      names.length,
+      canvas.height,
+      paddingTop,
+      paddingBottom
+    );
 
     names.forEach((name, i) => {
       const multiplier =
@@ -182,12 +257,14 @@ import {
       const y = paddingTop + i * verticalSpacing;
       const spriteIndex = Math.floor(Math.random() * TOTAL_BOAT_SPRITES);
 
-      waffles.push(initWaffleState(name, i, {
-        startX: START_X,
-        y,
-        baseSpeed: base,
-        spriteIndex
-      }));
+      waffles.push(
+        initWaffleState(name, i, {
+          startX: START_X,
+          y,
+          baseSpeed: base,
+          spriteIndex,
+        })
+      );
     });
   }
 
@@ -207,7 +284,13 @@ import {
     }
 
     // === Parallax Background Layers (far → near) ===
-    drawParallaxBackgrounds(ctx, canvas.width, canvas.height, parallaxLayers, startTime);
+    drawParallaxBackgrounds(
+      ctx,
+      canvas.width,
+      canvas.height,
+      parallaxLayers,
+      startTime
+    );
 
     // Particles (syrup drips / splashes)
     particleSystem.update();
@@ -217,19 +300,38 @@ import {
     drawFinishLine(ctx, canvas.height, FINISH_LINE, progress);
 
     // Waffles
+    const avgProgress = calculateAverageProgress(waffles, START_X, FINISH_LINE);
     waffles.forEach((w) => {
       const bob = Math.sin(w.phase) * 2.5;
 
       const logicalProgress = (w.x - START_X) / (FINISH_LINE - START_X);
-      const visProg = calculateVisualProgress(logicalProgress, progress);
+      const visProg = calculateVisualProgress(
+        logicalProgress,
+        progress,
+        avgProgress
+      );
 
       const visualX =
         START_X + (FINISH_LINE - START_X) * Math.max(0, Math.min(1, visProg));
-      
-      const displayName = nameDisplayMode === 'hidden' ? '' :
-        (nameDisplayMode === 'short' ? (w.displayNameShort || w.name) : w.name);
 
-      drawBoat(ctx, visualX, w.y, bob, displayName, w.spriteIndex, w.tilt, boatImages, nameDisplayMode);
+      const displayName =
+        nameDisplayMode === 'hidden'
+          ? ''
+          : nameDisplayMode === 'short'
+            ? w.displayNameShort || w.name
+            : w.name;
+
+      drawBoat(
+        ctx,
+        visualX,
+        w.y,
+        bob,
+        displayName,
+        w.spriteIndex,
+        w.tilt,
+        boatImages,
+        nameDisplayMode
+      );
     });
 
     // Update live leaderboard
@@ -273,17 +375,31 @@ import {
 
     const avgProgress = calculateAverageProgress(waffles, START_X, FINISH_LINE);
 
+    let anyJitterInFinalPhase = false;
+
     waffles.forEach((w) => {
       if (w.finished) return;
 
-      const updateResult = updateWafflePosition(w, dt, progress, avgProgress, START_X, FINISH_LINE, now);
+      const updateResult = updateWafflePosition(
+        w,
+        dt,
+        progress,
+        avgProgress,
+        START_X,
+        FINISH_LINE,
+        now
+      );
       if (updateResult.emitJitter) {
         particleSystem.emit(w.x, w.y + 6, updateResult.jitterCount);
         if (updateResult.isFinalPhase) {
-          playSplash(1.1);
+          anyJitterInFinalPhase = true;
         }
       }
     });
+
+    if (anyJitterInFinalPhase && Math.random() < 0.2) {
+      playSplash(1.1);
+    }
 
     // The race runs for the full duration.
     // When time expires, the boat that is farthest ahead wins.
@@ -319,7 +435,7 @@ import {
 
     list.innerHTML = '';
     container.classList.remove('hidden');
-    
+
     updateUIForFinish();
 
     const top3 = results.slice(0, 3);
@@ -331,7 +447,7 @@ import {
     const p3Name = document.getElementById('podium-3rd-name');
 
     if (p1Name) p1Name.textContent = winner ? winner.name : '—';
-    
+
     if (p2Name) {
       if (results[1]) {
         p2Name.textContent = results[1].name;
@@ -358,7 +474,7 @@ import {
       const wCtx = winnerCanvas.getContext('2d');
       wCtx.clearRect(0, 0, winnerCanvas.width, winnerCanvas.height);
       const img = boatImages[winner.spriteIndex];
-      if (img && img.complete) {
+      if (img && img.complete && img.naturalWidth > 0) {
         const targetHeight = 64;
         const scale = targetHeight / img.height;
         const drawWidth = img.width * scale;
@@ -367,7 +483,13 @@ import {
         const cy = winnerCanvas.height / 2;
         wCtx.save();
         wCtx.translate(cx, cy);
-        wCtx.drawImage(img, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
+        wCtx.drawImage(
+          img,
+          -drawWidth / 2,
+          -drawHeight / 2,
+          drawWidth,
+          drawHeight
+        );
         wCtx.restore();
       } else {
         wCtx.save();
@@ -430,19 +552,23 @@ import {
     setTimeout(() => {
       if (results.length > 3) {
         const restHeader = document.createElement('h4');
-        restHeader.className = 'text-sm font-semibold text-base-content/70 mb-3 px-1 tracking-wider';
+        restHeader.className =
+          'text-sm font-semibold text-base-content/70 mb-3 px-1 tracking-wider';
         restHeader.textContent = 'REST OF THE FIELD';
         list.appendChild(restHeader);
 
         const restContainer = document.createElement('div');
-        restContainer.className = 'space-y-1.5 max-h-[280px] overflow-auto pr-1';
+        restContainer.className =
+          'space-y-1.5 max-h-[280px] overflow-auto pr-1';
 
         results.slice(3).forEach((r, index) => {
           const div = document.createElement('div');
-          div.className = 'flex items-center gap-3 bg-base-200 px-4 py-2.5 rounded-xl text-sm';
+          div.className =
+            'flex items-center gap-3 bg-base-200 px-4 py-2.5 rounded-xl text-sm';
 
           const rank = document.createElement('div');
-          rank.className = 'badge badge-ghost badge-sm w-7 justify-center font-mono';
+          rank.className =
+            'badge badge-ghost badge-sm w-7 justify-center font-mono';
           rank.textContent = String(index + 4);
 
           const name = document.createElement('span');
@@ -480,9 +606,11 @@ import {
             winner: results[0].name,
             results: results.map((r, i) => ({ rank: i + 1, name: r.name })),
             duration: duration,
-            timestamp: Date.now()
-          })
-        }).catch((err) => console.warn('[Wafflerace] Outgoing webhook failed:', err));
+            timestamp: Date.now(),
+          }),
+        }).catch((err) =>
+          console.warn('[Wafflerace] Outgoing webhook failed:', err)
+        );
       }
     }, 2500);
   }
@@ -505,9 +633,7 @@ import {
 
   function copyFullResults() {
     if (!results || results.length === 0) return;
-    const text = results
-      .map((r, i) => `${i + 1}. ${r.name}`)
-      .join('\n');
+    const text = results.map((r, i) => `${i + 1}. ${r.name}`).join('\n');
     navigator.clipboard.writeText(text).then(() => {
       const btns = document.querySelectorAll('button');
       btns.forEach((b) => {
@@ -692,7 +818,7 @@ import {
     const p1 = document.getElementById('podium-1st');
     const p2 = document.getElementById('podium-2nd');
     const p3 = document.getElementById('podium-3rd');
-    
+
     if (announcement) {
       announcement.classList.add('opacity-0');
       announcement.classList.remove('opacity-100');
@@ -747,7 +873,7 @@ import {
       onStart: startRace,
       onPee: togglePee,
       onToggleControls: toggleHideControls,
-      onRunAgain: runAgainWithSameNames
+      onRunAgain: runAgainWithSameNames,
     });
 
     initSpectatorMode(window.IS_SPECTATOR);
@@ -755,7 +881,9 @@ import {
 
     // Parse URL params for streaming features
     const urlParams = new URLSearchParams(window.location.search);
-    const shouldHideControls = urlParams.get('hide_controls') === '1' || urlParams.get('theme') === 'obs';
+    const shouldHideControls =
+      urlParams.get('hide_controls') === '1' ||
+      urlParams.get('theme') === 'obs';
     const shouldAutoStart = urlParams.get('auto_start') === '1';
 
     if (shouldHideControls) {
@@ -765,7 +893,8 @@ import {
 
     if (shouldAutoStart) {
       const checkPreload = () => {
-        if (loadedAssetsCount >= totalAssets * 0.98) { // 98% loaded
+        if (loadedAssetsCount >= totalAssets * 0.98) {
+          // 98% loaded
           startRace();
         } else {
           setTimeout(checkPreload, 100);
@@ -780,25 +909,31 @@ import {
   window.setNameDisplay = setNameDisplay;
   window.RACE_ASSETS = { boatImages, bgImages };
   window.RACE_STATE = {
-    get waffles() { return waffles; },
-    get parallaxLayers() { return parallaxLayers; }
+    get waffles() {
+      return waffles;
+    },
+    get parallaxLayers() {
+      return parallaxLayers;
+    },
   };
   window.RACE_DEBUG = {
     teleportToFinish(index) {
       if (waffles[index]) {
         waffles[index].x = FINISH_LINE - 10;
-        console.log(`[Wafflerace Debug] Teleported waffle ${index} (${waffles[index].name}) close to finish line.`);
+        console.log(
+          `[Wafflerace Debug] Teleported waffle ${index} (${waffles[index].name}) close to finish line.`
+        );
       }
     },
     triggerFinish() {
       if (startTime && !finished) {
-        startTime = Date.now() - (duration * 1000) - 100;
+        startTime = Date.now() - duration * 1000 - 100;
         console.log(`[Wafflerace Debug] Triggered immediate race finish.`);
       }
     },
     getFPS() {
       return lastFps;
-    }
+    },
   };
 
   init();
