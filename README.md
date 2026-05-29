@@ -50,6 +50,7 @@ This release brings Wafflerace up to a premium 2026 developer look and feel, add
 
 - **Design Refresh** — Replaced flat backgrounds with a stark white developer dot-grid layout, minimal slate/zinc borders, and responsive template designs aligned with projectsyrup.app.
 - **Boat Sprites Transparency** — Scanned default collections and removed solid backgrounds from 6 opaque default boat sprites, generating fully transparent WebP and PNG assets.
+- **Seamless Parallax Backgrounds** — Implemented alternating horizontal mirroring for repeating background tiles, creating a mathematically seamless parallax scrolling loop for all background images without visible seams.
 - **Procedural Water Splash Sound** — Synthesized a soft, natural splash combining a sine bubble sweep and bandpass-filtered noise, eliminating the annoying synthesizer beep.
 - **Throttled Final-Phase Audio** — Splash sounds trigger on a 20% random frame check in the final phase, creating a sporadic and natural atmosphere instead of a rhythmic buzz.
 - **Visual Camera Pacing** — Stretched the camera progress curve so boats take longer to reach the visual center of the screen, arriving at 50% screen width at exactly 50% race progress (previously 30%).

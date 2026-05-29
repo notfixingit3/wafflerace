@@ -46,17 +46,32 @@ export function drawParallaxBackgrounds(
       if (!layer.img || !layer.img.complete || layer.img.naturalWidth === 0)
         return;
       const speed = layer.speed;
-      const offset = startTime
-        ? (((Date.now() - startTime) / 1000) * speed) % layer.img.width
+      const tileWidth = layer.img.width;
+      const scrolled = startTime
+        ? ((Date.now() - startTime) / 1000) * speed
         : 0;
-      ctx.drawImage(layer.img, -offset, 0, layer.img.width, height);
-      ctx.drawImage(
-        layer.img,
-        -offset + layer.img.width,
-        0,
-        layer.img.width,
-        height
-      );
+      const offset = scrolled % tileWidth;
+      const baseTileIndex = Math.floor(scrolled / tileWidth);
+
+      let drawX = -offset;
+      let currentIndex = baseTileIndex;
+
+      while (drawX < width) {
+        const isMirrored = currentIndex % 2 !== 0;
+
+        if (isMirrored) {
+          ctx.save();
+          ctx.translate(drawX + tileWidth, 0);
+          ctx.scale(-1, 1);
+          ctx.drawImage(layer.img, 0, 0, tileWidth, height);
+          ctx.restore();
+        } else {
+          ctx.drawImage(layer.img, drawX, 0, tileWidth, height);
+        }
+
+        drawX += tileWidth;
+        currentIndex++;
+      }
     });
   } else {
     ctx.fillStyle = '#a8c8dc';

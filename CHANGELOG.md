@@ -36,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 13 new Vitest test cases in `web/static/js/race-logic.test.js` covering dynamic layout spacing, display name formatting, leaderboard sorting, average progress, and individual waffle physics updates.
 
 ### Changed
+- Alternated horizontal mirroring for repeating background tiles in `race-render.js` to create mathematically seamless parallax scrolling for all background assets.
 - Extended camera progression in `race-logic.js` so boats take longer to reach the visual center (arriving at 50% race progress instead of 30%).
 - Throttled final-phase splash sounds in `race.js` using a 20% random frame check to prevent annoying rhythmic clicking.
 - Refactored `showResults()` in `web/static/js/race.js` to execute sequential reveals (3rd place -> 2nd place -> 1st place + winner name/announcement/confetti/finish chime) over 600ms timed intervals.
