@@ -12,7 +12,7 @@ When starting a fresh session:
 4. Use the conversion script (`npm run convert:webp`) when new images are generated.
 5. The most important rules are called out in **bold** throughout this document (especially boat direction and visual clamping).
 
-## Current Progress Snapshot (as of v0.1.14 unreleased)
+## Current Progress Snapshot (as of v0.1.14)
 
 **Boats**
 - Default collection: 50/50 complete

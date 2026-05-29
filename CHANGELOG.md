@@ -10,6 +10,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
+### Changed
+
+### Fixed
+
+### Removed
+
+
+## [0.1.14] - 2026-05-29
+
+**This is a major visual, audio, asset, and E2E testing release.** It brings Wafflerace up to a premium 2026 aesthetic with a stark white developer layout, soft procedural water sound synthesis, improved pacing dynamics, and fully transparent default boat collections.
+
+### Added
+- New 2026 Stark White UI design system featuring dot-grid layouts, responsive components, and modern typography details.
+- Procedural water splash audio synthesizer in `race-audio.js` combining a low-frequency sine bubble sweep and bandpass-filtered noise.
+- Automatic border-based flood-fill transparency processing script.
+- 6 newly transparent default boat sprites (PNG/WebP format for `boat-right-12`, `38`, `39`, `43`, `48`, `49`).
 - Interactive, animated visual three-step podium (1st, 2nd, 3rd) on the race results screen with transition classes for dynamic slide-up reveals.
 - Dedicated canvas (`winner-boat-canvas`) on the gold podium step showing a high-production rendering of the winner's boat sprite.
 - Complete E2E journey test suite in `e2e/race-journey.spec.js` covering sequential podium reveals, simulation placement accuracy verification, winner canvas presence, SQLite database history persistence, and spectator mode.
@@ -19,6 +36,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 13 new Vitest test cases in `web/static/js/race-logic.test.js` covering dynamic layout spacing, display name formatting, leaderboard sorting, average progress, and individual waffle physics updates.
 
 ### Changed
+- Extended camera progression in `race-logic.js` so boats take longer to reach the visual center (arriving at 50% race progress instead of 30%).
+- Throttled final-phase splash sounds in `race.js` using a 20% random frame check to prevent annoying rhythmic clicking.
 - Refactored `showResults()` in `web/static/js/race.js` to execute sequential reveals (3rd place -> 2nd place -> 1st place + winner name/announcement/confetti/finish chime) over 600ms timed intervals.
 - Retained the final results card for standings of 4th place and below under "Rest of the Field" to avoid visual redundancy.
 - Updated `runAgainWithSameNames()` in `web/static/js/race.js` to reset the podium styling classes and clear the winner's canvas context for clean consecutive races.
@@ -116,7 +135,8 @@ Wafflerace 0.1.12 makes the project significantly easier and more professional t
 
 ---
 
-[Unreleased]: https://github.com/notfixingit3/wafflerace/compare/v0.1.13...HEAD
+[Unreleased]: https://github.com/notfixingit3/wafflerace/compare/v0.1.14...HEAD
+[0.1.14]: https://github.com/notfixingit3/wafflerace/compare/v0.1.13...v0.1.14
 [0.1.13]: https://github.com/notfixingit3/wafflerace/compare/v0.1.12...v0.1.13
 [0.1.12]: https://github.com/notfixingit3/wafflerace/releases/tag/v0.1.12
 [0.1.11]: https://github.com/notfixingit3/wafflerace/releases/tag/v0.1.11
