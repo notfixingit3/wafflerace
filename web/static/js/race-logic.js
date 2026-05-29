@@ -70,6 +70,8 @@ export function getRaceFormValues(form) {
     duration: parseInt(form.querySelector('input[name="duration"]')?.value, 10) || 30,
     boatCollection: form.querySelector('#boat-collection')?.value || 'default',
     bgCollection: form.querySelector('#background-collection')?.value || 'default',
+    theme: form.querySelector('#race-theme')?.value || 'default',
+    webhook: form.querySelector('#webhook-url')?.value || '',
   };
 }
 
@@ -77,7 +79,7 @@ export function getRaceFormValues(form) {
  * Builds the URL to redirect to after successfully creating a race.
  * Handles optional collection parameters cleanly.
  */
-export function buildRaceRedirectUrl(raceId, names, duration, boatCollection = 'default', bgCollection = 'default') {
+export function buildRaceRedirectUrl(raceId, names, duration, boatCollection = 'default', bgCollection = 'default', theme = 'default', webhook = '') {
   const nameParam = Array.isArray(names) ? names.join(',') : names
 
   let url = `/race?id=${raceId}&names=${encodeURIComponent(nameParam)}&duration=${duration}`
@@ -87,6 +89,12 @@ export function buildRaceRedirectUrl(raceId, names, duration, boatCollection = '
   }
   if (bgCollection && bgCollection !== 'default') {
     url += `&bg=${encodeURIComponent(bgCollection)}`
+  }
+  if (theme && theme !== 'default') {
+    url += `&theme=${encodeURIComponent(theme)}`
+  }
+  if (webhook) {
+    url += `&webhook=${encodeURIComponent(webhook)}`
   }
 
   return url
@@ -127,7 +135,9 @@ export async function submitRaceCreation({
   namesInput,
   duration,
   boatCollection = 'default',
-  bgCollection = 'default'
+  bgCollection = 'default',
+  theme = 'default',
+  webhook = ''
 }) {
   const nameList = parseNames(namesInput)
   const validation = validateRaceInput(nameList, duration)
@@ -148,7 +158,9 @@ export async function submitRaceCreation({
     nameList,
     duration,
     boatCollection,
-    bgCollection
+    bgCollection,
+    theme,
+    webhook
   )
 
   return { success: true, id: result.id, redirectUrl }
@@ -296,6 +308,7 @@ export function calculateAverageProgress(waffles, startX, finishLine) {
 export function initWaffleState(name, index, { startX, y, baseSpeed, spriteIndex, phase, bobSpeed }) {
   return {
     name: name,
+    displayNameShort: name.length > 9 ? name.slice(0, 8) + '…' : name,
     x: startX,
     y: y,
     baseSpeed: baseSpeed,

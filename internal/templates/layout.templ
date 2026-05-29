@@ -9,6 +9,11 @@ templ Layout(title string) {
 			<title>{ title } | Wafflerace</title>
 			<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧇</text></svg>">
 			<link rel="stylesheet" href="/static/css/app.css"/>
+			<script>
+				const params = new URLSearchParams(window.location.search);
+				const theme = params.get('theme') || localStorage.getItem('wafflerace_theme') || 'default';
+				document.documentElement.setAttribute('data-theme', theme);
+			</script>
 		</head>
 		<body class="bg-base-200 min-h-screen">
 			<div class="navbar bg-base-100 shadow-sm">

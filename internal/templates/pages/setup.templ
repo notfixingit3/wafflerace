@@ -94,6 +94,32 @@ templ Setup() {
 							</div>
 						</div>
 
+						<!-- Themes and Webhooks Selectors -->
+						<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+							<div>
+								<label class="label">
+									<span class="label-text font-medium">Visual Theme</span>
+								</label>
+								<select id="race-theme" class="select select-bordered w-full">
+									<option value="default">Default (Warm Syrup)</option>
+									<option value="dark">Dark Mode</option>
+									<option value="nature">Nature (Forest Green)</option>
+									<option value="obs">OBS Transparent Overlay</option>
+								</select>
+							</div>
+							<div>
+								<label class="label">
+									<span class="label-text font-medium">Finish Webhook URL (Optional)</span>
+								</label>
+								<input 
+									type="url" 
+									id="webhook-url" 
+									placeholder="https://example.com/api/webhook" 
+									class="input input-bordered w-full"
+								/>
+							</div>
+						</div>
+
 						<div class="card-actions justify-end pt-4">
 							<button type="submit" class="btn btn-primary btn-lg w-full md:w-auto min-h-[52px]">
 								Start Race 🧇

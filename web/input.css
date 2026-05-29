@@ -13,12 +13,7 @@
     --color-base-200: #f0e0c8;
     --color-base-300: #e8d4b0;
     --color-base-content: #3f2a1d;
-  }
-}
-
-/* DaisyUI theme override for syrupy feel */
-@layer base {
-  :root {
+    
     --primary: #c48a3a;
     --primary-content: #3f2a1d;
     --secondary: #8b5a2b;
@@ -28,6 +23,72 @@
     --base-200: #f0e0c8;
     --base-300: #e8d4b0;
     --base-content: #3f2a1d;
+  }
+
+  [data-theme="dark"] {
+    --color-primary: #f4c95f;
+    --color-primary-content: #121212;
+    --color-secondary: #c48a3a;
+    --color-accent: #8b5a2b;
+    --color-neutral: #e0e0e0;
+    --color-base-100: #1e1e1e;
+    --color-base-200: #121212;
+    --color-base-300: #2c2c2c;
+    --color-base-content: #f5f5f5;
+    
+    --primary: #f4c95f;
+    --primary-content: #121212;
+    --secondary: #c48a3a;
+    --accent: #8b5a2b;
+    --neutral: #e0e0e0;
+    --base-100: #1e1e1e;
+    --base-200: #121212;
+    --base-300: #2c2c2c;
+    --base-content: #f5f5f5;
+  }
+
+  [data-theme="nature"] {
+    --color-primary: #2e7d32;
+    --color-primary-content: #e8f5e9;
+    --color-secondary: #1b5e20;
+    --color-accent: #81c784;
+    --color-neutral: #2e7d32;
+    --color-base-100: #e8f5e9;
+    --color-base-200: #c8e6c9;
+    --color-base-300: #a5d6a7;
+    --color-base-content: #1b5e20;
+    
+    --primary: #2e7d32;
+    --primary-content: #e8f5e9;
+    --secondary: #1b5e20;
+    --accent: #81c784;
+    --neutral: #2e7d32;
+    --base-100: #e8f5e9;
+    --base-200: #c8e6c9;
+    --base-300: #a5d6a7;
+    --base-content: #1b5e20;
+  }
+
+  [data-theme="obs"] {
+    --color-primary: #f4c95f;
+    --color-primary-content: #121212;
+    --color-secondary: #c48a3a;
+    --color-accent: #8b5a2b;
+    --color-neutral: #ffffff;
+    --color-base-100: rgba(18, 18, 18, 0.5);
+    --color-base-200: transparent;
+    --color-base-300: rgba(255, 255, 255, 0.1);
+    --color-base-content: #ffffff;
+    
+    --primary: #f4c95f;
+    --primary-content: #121212;
+    --secondary: #c48a3a;
+    --accent: #8b5a2b;
+    --neutral: #ffffff;
+    --base-100: rgba(18, 18, 18, 0.5);
+    --base-200: transparent;
+    --base-300: rgba(255, 255, 255, 0.1);
+    --base-content: #ffffff;
   }
 }
 

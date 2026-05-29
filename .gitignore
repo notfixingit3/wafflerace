@@ -46,6 +46,8 @@ web/static/css/*.map
 .idea/
 .vscode/
 .antigravitycli/
+.antigravity/
+.antigravity*
 *.swp
 *.swo
 *~

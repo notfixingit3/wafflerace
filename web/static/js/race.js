@@ -42,13 +42,15 @@ import {
   let paused = false;
   let pauseStartTime = null;
   let nameDisplayMode = 'short'; // 'full', 'short', or 'hidden'
-  let controlsHidden = false;
+  let controlsVisible = true;
   let frameTimes = [];
   let lastFps = 0;
+  let loadedAssetsCount = 0;
 
   // === Configuration (centralized for maintainability) ===
   const TOTAL_BOAT_SPRITES = 50;
   const MAX_BG_IMAGES = 40; // supports default (20) + nature (30) + future collections
+  const totalAssets = TOTAL_BOAT_SPRITES + MAX_BG_IMAGES;
 
   // Jitter behavior
   const BASE_JITTER_INTERVAL = 90;
@@ -56,7 +58,6 @@ import {
 
   // === AI-Generated Boat Sprites (50 right-facing variants) ===
   const boatImages = [];
-  // Mapping for collections that use human-readable names instead of boat-right-XX
   const FLAGS_OF_US_STATES = [
     'alabama','alaska','arizona','arkansas','california','colorado','connecticut','delaware',
     'florida','georgia','hawaii','idaho','illinois','indiana','iowa','kansas','kentucky',
@@ -67,7 +68,6 @@ import {
     'virginia','washington','west-virginia','wisconsin','wyoming'
   ];
 
-  // First 5 for the new Flags of the World collection (top countries by population)
   const FLAGS_OF_WORLD_FIRST = [
     'india', 'china', 'united-states', 'indonesia', 'pakistan'
   ];
@@ -89,11 +89,17 @@ import {
       const img = new Image();
       const base = getBoatBaseName(collection, i);
 
-      // Prefer WebP (dramatically smaller file size) with PNG fallback
+      const onAssetLoad = () => {
+        loadedAssetsCount++;
+      };
+
       img.src = `/assets/boats/collections/${collection}/webp/${base}.webp`;
+      img.onload = onAssetLoad;
 
       img.onerror = () => {
-        img.onerror = null; // Prevent infinite loop if fallback also fails
+        img.onerror = null;
+        img.onload = onAssetLoad;
+        img.onerror = onAssetLoad; // count failed files as finished to avoid lockouts
         img.src = `/assets/boats/collections/${collection}/png/${base}.png`;
       };
 
@@ -112,11 +118,17 @@ import {
       const img = new Image();
       const base = `bg-river-${String(i).padStart(2, '0')}`;
 
-      // Prefer WebP for better performance/size
+      const onAssetLoad = () => {
+        loadedAssetsCount++;
+      };
+
       img.src = `/assets/backgrounds/collections/${collection}/webp/${base}.webp`;
+      img.onload = onAssetLoad;
 
       img.onerror = () => {
-        img.onerror = null; // Prevent infinite loop if fallback also fails
+        img.onerror = null;
+        img.onload = onAssetLoad;
+        img.onerror = onAssetLoad;
         img.src = `/assets/backgrounds/collections/${collection}/jpg/${base}.jpg`;
       };
 
@@ -140,7 +152,6 @@ import {
     finished = false;
     particleSystem.clear();
 
-    // Randomly pick 3 distinct backgrounds for parallax (far / mid / water)
     const validBgs = bgImages.filter((img) => img.complete && img.width > 0);
     if (validBgs.length < 3) {
       while (validBgs.length < 3 && bgImages.length > 0) {
@@ -157,7 +168,6 @@ import {
     const distance = FINISH_LINE - START_X;
     const winnerSpeed = distance / duration;
 
-    // Everyone else is slower than the winner
     const minMultiplier = 0.7;
     const maxMultiplier = 0.97;
 
@@ -188,14 +198,10 @@ import {
       ? Math.min((Date.now() - startTime) / 1000 / duration, 1)
       : 0;
 
-    const totalAssets = TOTAL_BOAT_SPRITES + MAX_BG_IMAGES;
-    const loaded =
-      boatImages.filter((b) => b.complete).length +
-      bgImages.filter((b) => b.complete).length;
-    const loadProgress = Math.min(1, loaded / totalAssets);
+    const loadProgress = Math.min(1, loadedAssetsCount / totalAssets);
 
     // Show loading overlay until assets are ready
-    if (loadProgress < 0.999 && !startTime) {
+    if (loadProgress < 0.99 && !startTime) {
       drawLoadingProgressBar(ctx, canvas.width, canvas.height, loadProgress);
       return;
     }
@@ -210,7 +216,7 @@ import {
     // Finish line (late reveal)
     drawFinishLine(ctx, canvas.height, FINISH_LINE, progress);
 
-    // Boats
+    // Waffles
     waffles.forEach((w) => {
       const bob = Math.sin(w.phase) * 2.5;
 
@@ -219,10 +225,14 @@ import {
 
       const visualX =
         START_X + (FINISH_LINE - START_X) * Math.max(0, Math.min(1, visProg));
-      drawBoat(ctx, visualX, w.y, bob, w.name, w.spriteIndex, w.tilt, boatImages, nameDisplayMode);
+      
+      const displayName = nameDisplayMode === 'hidden' ? '' :
+        (nameDisplayMode === 'short' ? (w.displayNameShort || w.name) : w.name);
+
+      drawBoat(ctx, visualX, w.y, bob, displayName, w.spriteIndex, w.tilt, boatImages, nameDisplayMode);
     });
 
-    // Update live leaderboard (item 8)
+    // Update live leaderboard
     updateLiveLeaderboard();
   }
 
@@ -280,7 +290,7 @@ import {
     if (elapsed >= duration) {
       finished = true;
 
-      // Build final results purely by position (no times)
+      // Build final results
       results = [...waffles]
         .sort((a, b) => b.x - a.x) // farthest = winner
         .map((w) => ({ name: w.name, spriteIndex: w.spriteIndex }));
@@ -416,9 +426,8 @@ import {
       playFinishChime();
     }, 1800);
 
-    // 4. Reveal Rest of the Field & persistence controls (t = 2500ms)
+    // 4. Reveal Rest of the Field & Webhook trigger (t = 2500ms)
     setTimeout(() => {
-      // Full Standings list (4th place and below)
       if (results.length > 3) {
         const restHeader = document.createElement('h4');
         restHeader.className = 'text-sm font-semibold text-base-content/70 mb-3 px-1 tracking-wider';
@@ -452,20 +461,36 @@ import {
         list.appendChild(message);
       }
 
-      // Save to local storage history
+      // Local storage history
       if (results.length > 0) {
         saveRaceToHistory(results[0].name);
       }
       showRaceHistory();
+
+      // Trigger Webhook Event if configured in query parameters
+      const urlParams = new URLSearchParams(window.location.search);
+      const webhookUrl = urlParams.get('webhook');
+      if (webhookUrl && results.length > 0) {
+        fetch(webhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            event: 'race_finished',
+            race_id: window.RACE_ID,
+            winner: results[0].name,
+            results: results.map((r, i) => ({ rank: i + 1, name: r.name })),
+            duration: duration,
+            timestamp: Date.now()
+          })
+        }).catch((err) => console.warn('[Wafflerace] Outgoing webhook failed:', err));
+      }
     }, 2500);
   }
 
-  // Utility: Copy winner name to clipboard
   function copyWinner() {
     if (!results || results.length === 0) return;
     const winner = results[0].name;
     navigator.clipboard.writeText(winner).then(() => {
-      // Simple feedback
       const btns = document.querySelectorAll('button');
       btns.forEach((b) => {
         if (b.innerText.includes('Winner')) b.innerText = 'Copied!';
@@ -478,7 +503,6 @@ import {
     });
   }
 
-  // Utility: Copy full results as text
   function copyFullResults() {
     if (!results || results.length === 0) return;
     const text = results
@@ -528,7 +552,6 @@ import {
     if (!finished) {
       requestAnimationFrame(loop);
     } else {
-      // Final timer update
       const timerEl = document.getElementById('timer');
       if (timerEl) timerEl.textContent = '0.0s';
     }
@@ -557,13 +580,12 @@ import {
     if (paused) {
       pauseStartTime = Date.now();
     } else {
-      // Adjust startTime to account for pause duration
       if (pauseStartTime) {
         const pauseDuration = Date.now() - pauseStartTime;
         startTime += pauseDuration;
         pauseStartTime = null;
       }
-      loop(); // restart the animation loop
+      loop();
     }
   }
 
@@ -575,8 +597,8 @@ import {
   }
 
   function toggleHideControls() {
-    controlsHidden = !controlsHidden;
-    toggleControlsVisibility(controlsHidden);
+    controlsVisible = !controlsVisible;
+    toggleControlsVisibility(controlsVisible);
   }
 
   function saveRaceToHistory(winnerName) {
@@ -664,7 +686,7 @@ import {
     const timerEl = document.getElementById('timer');
     if (timerEl) timerEl.textContent = duration.toFixed(1) + 's';
 
-    // Reset podium classes and details
+    // Reset podium classes
     const announcement = document.getElementById('winner-announcement');
     const winnerNameEl = document.getElementById('winner-name');
     const p1 = document.getElementById('podium-1st');
@@ -703,7 +725,7 @@ import {
     draw();
   }
 
-  // Global error handling for better observability
+  // Global error handling
   window.addEventListener('error', (event) => {
     console.error('[Wafflerace] Uncaught error:', event.error);
   });
@@ -721,7 +743,6 @@ import {
       console.error('[Wafflerace] Failed to initialize race:', err);
     }
 
-    // Bind event controllers
     bindControlButtons({
       onStart: startRace,
       onPee: togglePee,
@@ -729,21 +750,31 @@ import {
       onRunAgain: runAgainWithSameNames
     });
 
-    // Check spectator mode
     initSpectatorMode(window.IS_SPECTATOR);
-
-    // Setup fullscreen toggles
     initFullscreen(canvas);
 
-    // Auto-start after short delay (nice for OBS / demos)
-    setTimeout(() => {
-      if (!startTime) {
-        // startRace();
-      }
-    }, 600);
+    // Parse URL params for streaming features
+    const urlParams = new URLSearchParams(window.location.search);
+    const shouldHideControls = urlParams.get('hide_controls') === '1' || urlParams.get('theme') === 'obs';
+    const shouldAutoStart = urlParams.get('auto_start') === '1';
+
+    if (shouldHideControls) {
+      controlsVisible = false;
+      toggleControlsVisibility(controlsVisible);
+    }
+
+    if (shouldAutoStart) {
+      const checkPreload = () => {
+        if (loadedAssetsCount >= totalAssets * 0.98) { // 98% loaded
+          startRace();
+        } else {
+          setTimeout(checkPreload, 100);
+        }
+      };
+      setTimeout(checkPreload, 600);
+    }
   }
 
-  // Exports for templates and test hooks
   window.copyWinner = copyWinner;
   window.copyFullResults = copyFullResults;
   window.setNameDisplay = setNameDisplay;

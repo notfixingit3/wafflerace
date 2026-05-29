@@ -116,7 +116,7 @@ export function updateUIForFinish() {
 /**
  * Handles showing or hiding controls panel with layout transition.
  */
-export function toggleControlsVisibility(controlsHidden) {
+export function toggleControlsVisibility(visible) {
   const startBtn = document.getElementById('start-btn');
   const peeBtn = document.getElementById('pee-btn');
   const runAgainBtn = document.getElementById('run-again-btn');
@@ -127,7 +127,7 @@ export function toggleControlsVisibility(controlsHidden) {
 
   const els = [startBtn, peeBtn, runAgainBtn, fullscreenBtn, homeBtn, nameOptions].filter(Boolean);
 
-  if (controlsHidden) {
+  if (visible) {
     els.forEach((el) => el.classList.remove('hidden'));
     if (hideBtn) hideBtn.textContent = 'Hide Controls';
   } else {

@@ -29,8 +29,17 @@ export function drawLoadingProgressBar(ctx, width, height, loadProgress) {
 
 /**
  * Draws parallax background layers based on current progress.
+ * If transparent mode (OBS overlay) is active, skips drawing to keep canvas transparent.
  */
 export function drawParallaxBackgrounds(ctx, width, height, parallaxLayers, startTime) {
+  const params = new URLSearchParams(window.location.search);
+  const isTransparent = params.get('theme') === 'obs' || params.get('transparent') === '1';
+
+  if (isTransparent) {
+    // Skip drawing backgrounds to keep canvas transparent for OBS browser overlays
+    return;
+  }
+
   if (startTime && parallaxLayers.length === 3) {
     parallaxLayers.forEach((layer) => {
       if (!layer.img || !layer.img.complete) return;
@@ -76,8 +85,9 @@ export function drawFinishLine(ctx, height, finishLineX, progress) {
 
 /**
  * Draws an individual waffle boat, its tilt, rocking, and flag.
+ * Displays the pre-calculated displayName parameter.
  */
-export function drawBoat(ctx, x, y, bob, name, spriteIndex, tilt, boatImages, nameDisplayMode) {
+export function drawBoat(ctx, x, y, bob, displayName, spriteIndex, tilt, boatImages, nameDisplayMode) {
   const img = boatImages[spriteIndex];
   if (!img || !img.complete) {
     ctx.save();
@@ -145,14 +155,10 @@ export function drawBoat(ctx, x, y, bob, name, spriteIndex, tilt, boatImages, na
   );
   ctx.stroke();
 
-  if (nameDisplayMode !== 'hidden') {
+  if (nameDisplayMode !== 'hidden' && displayName) {
     ctx.fillStyle = '#3f2a1d';
     ctx.font = '8px system-ui, sans-serif';
     ctx.textAlign = 'right';
-    let displayName = name;
-    if (nameDisplayMode === 'short' && name.length > 9) {
-      displayName = name.slice(0, 8) + '…';
-    }
     ctx.fillText(displayName, attachX - 2, attachY + 2);
   }
 

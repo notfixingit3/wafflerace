@@ -339,6 +339,7 @@ describe('initWaffleState', () => {
     })
     expect(state).toEqual({
       name: 'Waffle 1',
+      displayNameShort: 'Waffle 1',
       x: 90,
       y: 120,
       baseSpeed: 5.5,
