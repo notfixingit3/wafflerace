@@ -248,8 +248,8 @@ import {
     const minMultiplier = 0.7;
     const maxMultiplier = 0.97;
 
-    const paddingTop = 42;
-    const paddingBottom = 32;
+    const paddingTop = 205;
+    const paddingBottom = 40;
     const verticalSpacing = calculateVerticalSpacing(
       names.length,
       canvas.height,

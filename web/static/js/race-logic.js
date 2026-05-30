@@ -358,11 +358,11 @@ export function getLeaders(waffles, limit = 3) {
 export function calculateVerticalSpacing(
   count,
   canvasHeight,
-  paddingTop = 42,
-  paddingBottom = 32
+  paddingTop = 205,
+  paddingBottom = 40
 ) {
   const availableHeight = canvasHeight - paddingTop - paddingBottom;
-  return Math.max(23, Math.min(36, availableHeight / Math.max(1, count - 1)));
+  return Math.max(3.2, Math.min(25, availableHeight / Math.max(1, count - 1)));
 }
 
 export function calculateAverageProgress(waffles, startX, finishLine) {

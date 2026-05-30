@@ -321,16 +321,16 @@ describe('getLeaders', () => {
 
 describe('calculateVerticalSpacing', () => {
   it('calculates spacing correctly for standard inputs', () => {
-    // availableHeight = 420 - 42 - 32 = 346
-    // spacing = 346 / (5 - 1) = 86.5
-    // clamped between 23 and 36 -> should be 36
+    // availableHeight = 420 - 205 - 40 = 175
+    // spacing = 175 / (5 - 1) = 43.75
+    // clamped between 3.2 and 25 -> should be 25
     const spacing = calculateVerticalSpacing(5, 420);
-    expect(spacing).toBe(36);
+    expect(spacing).toBe(25);
   });
 
   it('handles small number of waffles (avoiding infinity)', () => {
     const spacingSingle = calculateVerticalSpacing(1, 420);
-    expect(spacingSingle).toBe(36);
+    expect(spacingSingle).toBe(25);
   });
 });
 

@@ -128,14 +128,65 @@ export function drawBoat(
     return;
   }
 
-  ctx.save();
-  ctx.translate(x, y + bob);
-  ctx.rotate((tilt || 0) * 0.035); // subtle rocking
-
   const targetHeight = 72;
   const scale = targetHeight / img.height;
   const drawWidth = img.width * scale;
   const drawHeight = img.height * scale;
+
+  // 1. Draw water ripple/wake under the boat (in screen/water coordinates, no boat rotation)
+  ctx.save();
+  ctx.translate(x, y + bob);
+
+  // Draw subtle wake/splash waves behind the boat (extending to the left)
+  ctx.strokeStyle = 'rgba(235, 245, 255, 0.45)';
+  ctx.lineWidth = 1.8;
+  ctx.lineCap = 'round';
+
+  // Back wave 1 (longer, trailing)
+  ctx.beginPath();
+  const waveY1 = drawHeight / 2 - 10;
+  ctx.moveTo(-drawWidth * 0.3, waveY1);
+  ctx.quadraticCurveTo(
+    -drawWidth * 0.6,
+    waveY1 - 2 + Math.sin(Date.now() * 0.015 + x) * 1.5,
+    -drawWidth * 1.1,
+    waveY1 + 1
+  );
+  ctx.stroke();
+
+  // Back wave 2 (shorter, closer to hull)
+  ctx.beginPath();
+  const waveY2 = drawHeight / 2 - 8;
+  ctx.moveTo(-drawWidth * 0.2, waveY2);
+  ctx.quadraticCurveTo(
+    -drawWidth * 0.45,
+    waveY2 - 1 + Math.sin(Date.now() * 0.02 + x) * 1.0,
+    -drawWidth * 0.75,
+    waveY2 + 2
+  );
+  ctx.stroke();
+
+  // 2. Sub-hull ripple ellipse (drawn under the boat hull)
+  ctx.beginPath();
+  ctx.ellipse(
+    -2, // slightly shifted left
+    drawHeight / 2 - 9, // sits right at the hull's contact line
+    drawWidth * 0.42, // width of ripple
+    4.5 + Math.sin(Date.now() * 0.01 + x) * 1.2, // height pulsing
+    0,
+    0,
+    Math.PI * 2
+  );
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.28)';
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(195, 225, 255, 0.5)';
+  ctx.stroke();
+  ctx.restore();
+
+  // Now draw the actual boat (which HAS rocking/tilt applied)
+  ctx.save();
+  ctx.translate(x, y + bob);
+  ctx.rotate((tilt || 0) * 0.035); // subtle rocking
 
   ctx.drawImage(img, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
 
