@@ -192,3 +192,58 @@ export function drawBoat(
 
   ctx.restore();
 }
+
+/**
+ * Draws the Sugar Rush Engaged overlay when the final phase is active.
+ */
+export function drawSugarRushOverlay(ctx, width, height, progress) {
+  if (progress <= 0.82 || progress >= 0.98) return;
+
+  // Fade in quickly, then fade out slowly towards the end
+  let alpha = 0;
+  if (progress < 0.85) {
+    // Fade in over progress 0.82 to 0.85
+    alpha = (progress - 0.82) / 0.03;
+  } else {
+    // Fade out over progress 0.85 to 0.98
+    alpha = 1.0 - (progress - 0.85) / 0.13;
+  }
+
+  alpha = Math.max(0, Math.min(1, alpha));
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+
+  // Scale pulse based on time
+  const pulse = 1 + Math.sin(Date.now() * 0.012) * 0.04;
+
+  ctx.translate(width / 2, height / 2 - 40);
+  ctx.scale(pulse, pulse);
+
+  // Background blur/backing banner
+  ctx.fillStyle = 'rgba(251, 191, 36, 0.12)'; // amber-400 with opacity
+  ctx.strokeStyle = 'rgba(217, 119, 6, 0.4)'; // amber-600 with opacity
+  ctx.lineWidth = 2;
+  const bannerW = 320;
+  const bannerH = 48;
+  ctx.fillRect(-bannerW / 2, -bannerH / 2, bannerW, bannerH);
+  ctx.strokeRect(-bannerW / 2, -bannerH / 2, bannerW, bannerH);
+
+  // Sugar Rush Text
+  ctx.font =
+    'bold 22px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+
+  // Text glow/shadow
+  ctx.shadowColor = '#d97706'; // amber-600 glow
+  ctx.shadowBlur = 8;
+
+  ctx.fillStyle = '#fef08a'; // yellow-200
+  ctx.strokeStyle = '#78350f'; // amber-900 border
+  ctx.lineWidth = 4;
+  ctx.strokeText('⚡ SUGAR RUSH ENGAGED! ⚡', 0, 0);
+  ctx.fillText('⚡ SUGAR RUSH ENGAGED! ⚡', 0, 0);
+
+  ctx.restore();
+}

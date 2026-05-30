@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **This is a major visual, audio, asset, and E2E testing release.** It brings Wafflerace up to a premium 2026 aesthetic with a stark white developer layout, soft procedural water sound synthesis, improved pacing dynamics, and fully transparent default boat collections.
 
 ### Added
+- Added a pulsing, glowing HUD banner "⚡ SUGAR RUSH ENGAGED! ⚡" that flashes on-screen during the final sprint phase (progress 0.82 to 0.98), complete with a dynamic amber background plate and scale animations.
 - Implemented a dynamic auto-reloading mechanism inside `draw()` in `race.js` to populate `parallaxLayers` immediately when backgrounds finish loading asynchronously, resolving blank screens before clicking Start.
 - Designed and generated 3 horizontal parallax scrolling background layers (`bg-river-01` sky/mountains, `bg-river-02` riverbank, `bg-river-03` water surface) for a true 3D side-view depth effect.
 - New 2026 Stark White UI design system featuring dot-grid layouts, responsive components, and modern typography details.

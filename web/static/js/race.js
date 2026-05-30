@@ -15,6 +15,7 @@ import {
   drawParallaxBackgrounds,
   drawFinishLine,
   drawBoat,
+  drawSugarRushOverlay,
 } from './race-render.js';
 import {
   initSpectatorMode,
@@ -357,6 +358,9 @@ import {
         nameDisplayMode
       );
     });
+
+    // Draw Sugar Rush overlay if final phase is active
+    drawSugarRushOverlay(ctx, canvas.width, canvas.height, progress);
 
     // Update live leaderboard
     updateLiveLeaderboard();

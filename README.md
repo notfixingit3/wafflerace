@@ -54,6 +54,7 @@ This release brings Wafflerace up to a premium 2026 developer look and feel, add
 - **Preloader Autoload Fix** — Rebuilds background parallax layers inside the draw loop immediately as images load, ensuring background assets display on page load without needing a restart.
 - **Clean Canvas (No Drip Particles)** — Removed the dropping syrup dot particles during the race to keep the visual simulation clean and focused.
 - **Natural Breakaway Sprint** — Tapered the timing sync feedback loop down to 10% in the final phase, letting boats sprint and breakaway to the finish line naturally.
+- **Sugar Rush Engaged Banner** — Added a glowing, pulsing "⚡ SUGAR RUSH ENGAGED! ⚡" HUD overlay banner that flashes on canvas during the final sprint phase to add drama to the breakaway dash.
 - **Procedural Water Splash Sound** — Synthesized a soft, natural splash combining a sine bubble sweep and bandpass-filtered noise, eliminating the annoying synthesizer beep.
 - **Throttled Final-Phase Audio** — Splash sounds trigger on a 20% random frame check in the final phase, creating a sporadic and natural atmosphere instead of a rhythmic buzz.
 - **Visual Camera Pacing** — Stretched the camera progress curve so boats take longer to reach the visual center of the screen, arriving at 50% screen width at exactly 50% race progress (previously 30%).
