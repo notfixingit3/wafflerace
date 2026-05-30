@@ -55,7 +55,7 @@ import {
       'flags-of-world': 5,
     },
     backgrounds: {
-      default: 20,
+      default: 3,
       nature: 5,
     },
   };
@@ -199,7 +199,7 @@ import {
         img.onerror = null;
         img.onload = onAssetLoad;
         img.onerror = onAssetLoad;
-        img.src = `/assets/backgrounds/collections/${collection}/jpg/${base}.jpg`;
+        img.src = `/assets/backgrounds/collections/${collection}/png/${base}.png`;
       };
 
       bgImages.push(img);
@@ -223,17 +223,23 @@ import {
     particleSystem.clear();
 
     const validBgs = bgImages.filter((img) => img.complete && img.width > 0);
-    if (validBgs.length < 3) {
-      while (validBgs.length < 3 && bgImages.length > 0) {
-        validBgs.push(bgImages[validBgs.length % bgImages.length]);
-      }
+    const sortedBgs = validBgs.slice().sort((a, b) => {
+      return a.src.localeCompare(b.src);
+    });
+
+    if (sortedBgs.length >= 3) {
+      parallaxLayers = [
+        { img: sortedBgs[0], speed: 7 }, // far - sky and mountains (bg-river-01)
+        { img: sortedBgs[1], speed: 18 }, // mid - riverbank and trees (bg-river-02)
+        { img: sortedBgs[2], speed: 31 }, // near - water surface (bg-river-03)
+      ];
+    } else {
+      parallaxLayers = [
+        { img: sortedBgs[0] || null, speed: 7 },
+        { img: sortedBgs[0] || null, speed: 18 },
+        { img: sortedBgs[0] || null, speed: 31 },
+      ];
     }
-    const shuffled = validBgs.slice().sort(() => Math.random() - 0.5);
-    parallaxLayers = [
-      { img: shuffled[0], speed: 7 }, // far - very slow
-      { img: shuffled[1], speed: 18 }, // mid
-      { img: shuffled[2], speed: 31 }, // near water - faster
-    ];
 
     const distance = FINISH_LINE - START_X;
     const winnerSpeed = distance / duration;

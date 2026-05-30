@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **This is a major visual, audio, asset, and E2E testing release.** It brings Wafflerace up to a premium 2026 aesthetic with a stark white developer layout, soft procedural water sound synthesis, improved pacing dynamics, and fully transparent default boat collections.
 
 ### Added
+- Designed and generated 3 horizontal parallax scrolling background layers (`bg-river-01` sky/mountains, `bg-river-02` riverbank, `bg-river-03` water surface) for a true 3D side-view depth effect.
 - New 2026 Stark White UI design system featuring dot-grid layouts, responsive components, and modern typography details.
 - Procedural water splash audio synthesizer in `race-audio.js` combining a low-frequency sine bubble sweep and bandpass-filtered noise.
 - Automatic border-based flood-fill transparency processing script.
@@ -37,6 +38,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Alternated horizontal mirroring for repeating background tiles in `race-render.js` to create mathematically seamless parallax scrolling for all background assets.
+- Updated `race.js` background loader to assign layers sequentially (`01` far, `02` mid, `03` near) rather than shuffling them, preserving correct foreground/background depth layering.
+- Replaced background image asset loader fallback destination from `.jpg` inside the `jpg/` folder to `.png` inside the `png/` folder, maintaining transparency support.
 - Extended camera progression in `race-logic.js` so boats take longer to reach the visual center (arriving at 50% race progress instead of 30%).
 - Throttled final-phase splash sounds in `race.js` using a 20% random frame check to prevent annoying rhythmic clicking.
 - Refactored `showResults()` in `web/static/js/race.js` to execute sequential reveals (3rd place -> 2nd place -> 1st place + winner name/announcement/confetti/finish chime) over 600ms timed intervals.
