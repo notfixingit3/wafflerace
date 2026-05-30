@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **This is a major visual, audio, asset, and E2E testing release.** It brings Wafflerace up to a premium 2026 aesthetic with a stark white developer layout, soft procedural water sound synthesis, improved pacing dynamics, and fully transparent default boat collections.
 
 ### Added
+- Implemented a dynamic auto-reloading mechanism inside `draw()` in `race.js` to populate `parallaxLayers` immediately when backgrounds finish loading asynchronously, resolving blank screens before clicking Start.
 - Designed and generated 3 horizontal parallax scrolling background layers (`bg-river-01` sky/mountains, `bg-river-02` riverbank, `bg-river-03` water surface) for a true 3D side-view depth effect.
 - New 2026 Stark White UI design system featuring dot-grid layouts, responsive components, and modern typography details.
 - Procedural water splash audio synthesizer in `race-audio.js` combining a low-frequency sine bubble sweep and bandpass-filtered noise.
@@ -37,6 +38,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 13 new Vitest test cases in `web/static/js/race-logic.test.js` covering dynamic layout spacing, display name formatting, leaderboard sorting, average progress, and individual waffle physics updates.
 
 ### Changed
+- Tapered the syncing feedback loop strength down to 10% in the final phase to enable a smooth, natural breakaway sprint to the finish line.
+- Removed boat jitter syrup drip particle emissions during the race, keeping the screen clean and focused on racing.
 - Alternated horizontal mirroring for repeating background tiles in `race-render.js` to create mathematically seamless parallax scrolling for all background assets.
 - Updated `race.js` background loader to assign layers sequentially (`01` far, `02` mid, `03` near) rather than shuffling them, preserving correct foreground/background depth layering.
 - Replaced background image asset loader fallback destination from `.jpg` inside the `jpg/` folder to `.png` inside the `png/` folder, maintaining transparency support.

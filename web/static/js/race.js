@@ -277,6 +277,24 @@ import {
   function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    // If parallaxLayers has not been populated with completed images, try to build it now
+    const hasNullLayers =
+      parallaxLayers.length === 0 ||
+      parallaxLayers.some((l) => !l.img || l.img.naturalWidth === 0);
+    if (hasNullLayers) {
+      const validBgs = bgImages.filter((img) => img.complete && img.width > 0);
+      if (validBgs.length >= 3) {
+        const sortedBgs = validBgs.slice().sort((a, b) => {
+          return a.src.localeCompare(b.src);
+        });
+        parallaxLayers = [
+          { img: sortedBgs[0], speed: 7 }, // far
+          { img: sortedBgs[1], speed: 18 }, // mid
+          { img: sortedBgs[2], speed: 31 }, // near
+        ];
+      }
+    }
+
     const progress = startTime
       ? Math.min((Date.now() - startTime) / 1000 / duration, 1)
       : 0;
@@ -396,7 +414,6 @@ import {
         now
       );
       if (updateResult.emitJitter) {
-        particleSystem.emit(w.x, w.y + 6, updateResult.jitterCount);
         if (updateResult.isFinalPhase) {
           anyJitterInFinalPhase = true;
         }

@@ -440,7 +440,9 @@ export function updateWafflePosition(
   const currentLogicalProgress =
     distance > 0 ? (waffle.x - startX) / distance : 0;
   const error = currentLogicalProgress - progress;
-  const feedbackFactor = Math.max(0.15, 1.0 - error * 1.6);
+  const feedbackStrength =
+    progress > 0.82 ? Math.max(0.1, 1.0 - (progress - 0.82) * 5.0) : 1.0;
+  const feedbackFactor = Math.max(0.15, 1.0 - error * 1.6 * feedbackStrength);
 
   const accel = 1 + progress * 0.15;
   const move = waffle.currentSpeed * accel * dt * feedbackFactor;
