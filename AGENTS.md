@@ -12,7 +12,7 @@ When starting a fresh session:
 4. Use the conversion script (`npm run convert:webp`) when new images are generated.
 5. The most important rules are called out in **bold** throughout this document (especially boat direction and visual clamping).
 
-## Current Progress Snapshot (as of v0.1.14)
+## Current Progress Snapshot (as of v0.1.15)
 
 **Boats**
 - Default collection: 50/50 complete
@@ -103,7 +103,7 @@ See `assets/boat-concepts/README.md` for strict generation rules (especially "**
 - Organizing assets into **collections** (boats + backgrounds) was a major architectural improvement for long-term theming and variety.
 - The dramatic winner reveal is one of the highest-ROI areas for making the product feel premium.
 
-## Future Direction & Backlog (as of v0.1.14)
+## Future Direction & Backlog (as of v0.1.15)
 
 ### Testing (High Priority)
 - **Backend**:

@@ -18,6 +18,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 
+## [0.1.15] - 2026-05-29
+
+**This is a visual alignment and asset correction release.** It restricts all boat lanes to the water surface, introduces dynamic water ripples and trailing wake waves, and replaces all remaining default opaque boat sprites with clean transparent assets.
+
+### Added
+- Added procedurally-animated water ripples and wake wave trails under boat hulls to visually ground them.
+
+### Fixed
+- Constrained all boat lanes to the water surface (Y=205 to Y=380) to prevent boats from spilling onto the sky/hills.
+- Cleared solid grey/black background blocks from all remaining opaque default boat sprites (boat-right-12, boat-right-22, boat-right-34, boat-right-35, boat-right-36, boat-right-38, boat-right-43, and boat-right-48) and regenerated clean WebP assets.
+
+
 ## [0.1.14] - 2026-05-29
 
 **This is a major visual, audio, asset, and E2E testing release.** It brings Wafflerace up to a premium 2026 aesthetic with a stark white developer layout, soft procedural water sound synthesis, improved pacing dynamics, and fully transparent default boat collections.
@@ -143,7 +155,8 @@ Wafflerace 0.1.12 makes the project significantly easier and more professional t
 
 ---
 
-[Unreleased]: https://github.com/notfixingit3/wafflerace/compare/v0.1.14...HEAD
+[Unreleased]: https://github.com/notfixingit3/wafflerace/compare/v0.1.15...HEAD
+[0.1.15]: https://github.com/notfixingit3/wafflerace/compare/v0.1.14...v0.1.15
 [0.1.14]: https://github.com/notfixingit3/wafflerace/compare/v0.1.13...v0.1.14
 [0.1.13]: https://github.com/notfixingit3/wafflerace/compare/v0.1.12...v0.1.13
 [0.1.12]: https://github.com/notfixingit3/wafflerace/releases/tag/v0.1.12

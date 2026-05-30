@@ -44,6 +44,14 @@ This is a companion project to [Project Syrup](https://github.com/notfixingit3/w
 
 ## Current Status
 
+**v0.1.15** — Water Alignment, Ripples, and Transparent Sprites
+
+This release resolves the visual boat alignment issues, ensuring boats stay on the water surface and features dynamic water rendering and cleaned sprite transparency.
+
+- **Water Alignment** — Constrained all boat lanes to the water surface (Y=205 to Y=380), preventing boats from spilling onto the sky/riverbank.
+- **Dynamic Water Ripples & Wake** — Added procedurally-animated trailing wake waves and pulsing sub-hull water ripples under each boat.
+- **Clean Boat Transparency** — Scanned default collections and removed solid background boxes from all remaining opaque boat sprites (12, 22, 34, 35, 36, 38, 43, 48), generating fully transparent WebPs.
+
 **v0.1.14** — Design Refresh, Sprites Transparency, Refined Procedural Audio & Camera Pacing
 
 This release brings Wafflerace up to a premium 2026 developer look and feel, adds procedural audio sweeps, improves visual pacing dynamics, and ensures all default collection boat sprites are fully transparent.
