@@ -2,6 +2,7 @@ package game
 
 import (
 	"fmt"
+	"math/rand"
 	"sync"
 	"time"
 )
@@ -14,15 +15,20 @@ type Config struct {
 
 // Engine is the authoritative game engine that manages ducks and race state.
 type Engine struct {
-	mu     sync.Mutex
-	ducks  map[string]*Duck
-	config Config
-	paused bool
-	nextID int
+	mu       sync.Mutex
+	ducks    map[string]*Duck
+	config   Config
+	paused   bool
+	nextID   int
+	winnerID string
+	finished bool
 }
 
 // NewEngine creates a new game engine with the given configuration.
 func NewEngine(config Config) *Engine {
+	if config.FinishLineZ == 0 {
+		config.FinishLineZ = 200.0
+	}
 	return &Engine{
 		ducks:  make(map[string]*Duck),
 		config: config,
@@ -30,16 +36,24 @@ func NewEngine(config Config) *Engine {
 }
 
 // Tick advances the game state by the given duration.
-// This is a stub — actual movement implementation in Task 8.
 func (e *Engine) Tick(dt time.Duration) {
 	e.mu.Lock()
 	defer e.mu.Unlock()
 
-	if e.paused {
+	if e.paused || e.finished {
 		return
 	}
-	// stub: does not move ducks yet
-	_ = dt
+
+	now := time.Now()
+	seconds := dt.Seconds()
+	for _, d := range e.ducks {
+		d.Z += e.effectiveVelocity(d, now) * seconds
+
+		if d.Z >= e.config.FinishLineZ && e.winnerID == "" {
+			e.winnerID = d.ID
+			e.finished = true
+		}
+	}
 }
 
 // Ducks returns a snapshot of all ducks.
@@ -63,7 +77,6 @@ func (e *Engine) Duck(duckID string) (*Duck, bool) {
 
 // AddDuck creates a new duck with the given name, assigns it an ID and
 // distributes its X position across the river width (-20 to +20).
-// This is a stub — actual distribution logic in Task 8.
 func (e *Engine) AddDuck(name string) *Duck {
 	e.mu.Lock()
 	defer e.mu.Unlock()
@@ -72,7 +85,7 @@ func (e *Engine) AddDuck(name string) *Duck {
 	duck := &Duck{
 		ID:       fmt.Sprintf("duck-%d", e.nextID),
 		Name:     name,
-		X:        0, // stub: always 0
+		X:        spreadX(e.nextID),
 		Y:        0,
 		Z:        0,
 		Velocity: e.config.BaseVelocity,
@@ -107,17 +120,27 @@ func (e *Engine) Pause() {
 	e.paused = true
 }
 
-// Reset returns all ducks to Z=0 and unpauses the race.
-// This is a stub — actual implementation in Task 8.
+// Reset returns all ducks to Z=0, clears the winner/finished state, and unpauses the race.
 func (e *Engine) Reset() {
 	e.mu.Lock()
 	defer e.mu.Unlock()
+
 	e.paused = false
-	// stub: does not reset duck Z positions yet
+	e.winnerID = ""
+	e.finished = false
+	for _, d := range e.ducks {
+		d.Z = 0
+	}
+}
+
+// spreadX distributes ducks evenly across the river width [-20, +20].
+func spreadX(index int) float64 {
+	positions := []float64{-20, -10, 0, 10, 20}
+	return positions[index%len(positions)]
 }
 
 // randomColor returns a hex color string for a new duck.
 func randomColor() string {
 	colors := []string{"#FF4444", "#44FF44", "#4444FF", "#FFFF44", "#FF44FF", "#44FFFF"}
-	return colors[0] // stub: always returns first color
+	return colors[rand.Intn(len(colors))]
 }

@@ -5,8 +5,7 @@ import (
 	"time"
 )
 
-// Boost activates a boost for the given duck.
-// TODO: implement actual boost timing logic (Task 9)
+// Boost activates a boost for the given duck, refreshing any existing boost.
 func (e *Engine) Boost(duckID string) error {
 	e.mu.Lock()
 	defer e.mu.Unlock()
@@ -16,14 +15,12 @@ func (e *Engine) Boost(duckID string) error {
 		return errors.New("duck not found")
 	}
 
-	// Stub: does nothing yet
-	_ = d
+	d.ActiveBoostUntil = time.Now().Add(3 * time.Second)
 	return nil
 }
 
 // EffectiveVelocity returns the duck's current effective velocity,
 // accounting for active boosts.
-// TODO: implement boost multiplier logic (Task 9)
 func (e *Engine) EffectiveVelocity(duckID string) (float64, error) {
 	e.mu.Lock()
 	defer e.mu.Unlock()
@@ -33,8 +30,16 @@ func (e *Engine) EffectiveVelocity(duckID string) (float64, error) {
 		return 0, errors.New("duck not found")
 	}
 
-	// Stub: returns base velocity only (no boost multiplier)
-	return d.Velocity, nil
+	return e.effectiveVelocity(d, time.Now()), nil
+}
+
+// effectiveVelocity returns the velocity for duck d at time now.
+// Caller must hold e.mu.
+func (e *Engine) effectiveVelocity(d *Duck, now time.Time) float64 {
+	if now.Before(d.ActiveBoostUntil) {
+		return d.Velocity * 1.5
+	}
+	return d.Velocity
 }
 
 // Boosted returns true if the duck has an active boost.

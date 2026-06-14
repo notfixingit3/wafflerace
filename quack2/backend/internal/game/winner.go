@@ -1,19 +1,25 @@
 package game
 
 // Winner returns the duck that crossed the finish line first, or nil if no winner yet.
-// This is a stub — actual implementation in Task 10.
 func (e *Engine) Winner() *Duck {
-	return nil
+	e.mu.Lock()
+	defer e.mu.Unlock()
+
+	if e.winnerID == "" {
+		return nil
+	}
+	return e.ducks[e.winnerID]
 }
 
 // Finished returns true if a duck has crossed the finish line and the race is over.
-// This is a stub — actual implementation in Task 10.
 func (e *Engine) Finished() bool {
-	return false
+	e.mu.Lock()
+	defer e.mu.Unlock()
+
+	return e.finished
 }
 
-// ResetRace clears the winner and returns all ducks to Z=0.
-// This is a stub — actual implementation in Task 10.
+// ResetRace clears the winner/finished state and returns all ducks to Z=0.
 func (e *Engine) ResetRace() {
-	// stub: does nothing
+	e.Reset()
 }
