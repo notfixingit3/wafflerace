@@ -4,13 +4,13 @@ import "time"
 
 // Duck represents a duck in the game world with full internal state.
 type Duck struct {
-	ID              string    `json:"id"`
-	Name            string    `json:"name"`
-	X               float64   `json:"x"`
-	Y               float64   `json:"y"`
-	Z               float64   `json:"z"`
-	Velocity        float64   `json:"velocity"`
-	Color           string    `json:"color"`
+	ID               string    `json:"id"`
+	Name             string    `json:"name"`
+	X                float64   `json:"x"`
+	Y                float64   `json:"y"`
+	Z                float64   `json:"z"`
+	Velocity         float64   `json:"velocity"`
+	Color            string    `json:"color"`
 	ActiveBoostUntil time.Time `json:"-"`
 }
 

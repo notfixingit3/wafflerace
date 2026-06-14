@@ -36,7 +36,7 @@ vi.mock('@react-three/drei', () => ({
 describe('Duck', () => {
   it('renders a sphere mesh with the provided color', () => {
     const { container } = render(
-      <Duck id="duck-1" name="Ducky" x={10} y={0} z={5} color="#ff5722" />,
+      <Duck name="Ducky" x={10} y={0} z={5} color="#ff5722" />,
     );
 
     const mesh = container.querySelector('mesh');
@@ -51,7 +51,7 @@ describe('Duck', () => {
   });
 
   it('renders the duck name as a floating label above the sphere', () => {
-    render(<Duck id="duck-2" name="Speedy" x={-3} y={1} z={12} color="#00ff00" />);
+    render(<Duck name="Speedy" x={-3} y={1} z={12} color="#00ff00" />);
 
     const label = screen.getByTestId('duck-label');
     expect(label).not.toBeNull();

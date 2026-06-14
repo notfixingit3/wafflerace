@@ -4,7 +4,7 @@ import React from 'react';
 import { useRaceSocket } from '@/hooks/useRaceSocket';
 
 export default function Home() {
-  const { connected, ducks, winner, finished, sendCommand } = useRaceSocket();
+  const { connected, ducks, sendCommand } = useRaceSocket();
 
   return (
     <main style={{ padding: '2rem', fontFamily: 'system-ui, sans-serif' }}>
@@ -18,8 +18,6 @@ export default function Home() {
           </span>
         </p>
         <p>Ducks: {ducks.length}</p>
-        {winner && <p>Winner: {winner}</p>}
-        {finished && <p>Race finished</p>}
       </section>
 
       <section style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>

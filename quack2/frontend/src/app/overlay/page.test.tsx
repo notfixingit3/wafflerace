@@ -31,8 +31,8 @@ vi.mock('@/components/canvas/River', () => ({
 }));
 
 vi.mock('@/components/canvas/Duck', () => ({
-  default: ({ id, name }: { id: string; name: string }) => (
-    <div data-testid="duck" data-id={id} data-name={name}>
+  default: ({ name }: { name: string }) => (
+    <div data-testid="duck" data-name={name}>
       {name}
     </div>
   ),
@@ -54,8 +54,6 @@ describe('OverlayPage', () => {
     mockUseRaceSocket.mockReturnValue({
       connected: true,
       ducks: sampleDucks,
-      winner: null,
-      finished: false,
       sendCommand: mockSendCommand,
     });
     mockUseInterpolatedDucks.mockReturnValue(sampleDucks);
@@ -73,42 +71,10 @@ describe('OverlayPage', () => {
     expect(mockUseInterpolatedDucks).toHaveBeenCalledWith(sampleDucks);
   });
 
-  it('shows winner banner when race is finished', () => {
-    mockUseRaceSocket.mockReturnValue({
-      connected: true,
-      ducks: [],
-      winner: 'Duck-2',
-      finished: true,
-      sendCommand: mockSendCommand,
-    });
-    mockUseInterpolatedDucks.mockReturnValue([]);
-
-    render(<OverlayPage />);
-
-    expect(screen.getByText('Winner: Duck-2')).toBeInTheDocument();
-  });
-
-  it('shows winner banner when winner is present even if finished is false', () => {
-    mockUseRaceSocket.mockReturnValue({
-      connected: true,
-      ducks: [],
-      winner: 'Duck-1',
-      finished: false,
-      sendCommand: mockSendCommand,
-    });
-    mockUseInterpolatedDucks.mockReturnValue([]);
-
-    render(<OverlayPage />);
-
-    expect(screen.getByText('Winner: Duck-1')).toBeInTheDocument();
-  });
-
   it('shows disconnected overlay when not connected', () => {
     mockUseRaceSocket.mockReturnValue({
       connected: false,
       ducks: [],
-      winner: null,
-      finished: false,
       sendCommand: mockSendCommand,
     });
     mockUseInterpolatedDucks.mockReturnValue([]);

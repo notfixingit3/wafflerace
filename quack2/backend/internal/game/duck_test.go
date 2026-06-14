@@ -9,13 +9,13 @@ import (
 func TestDuck_MarshalJSON_ExcludesActiveBoostUntil(t *testing.T) {
 	now := time.Now()
 	d := Duck{
-		ID:              "duck-1",
-		Name:            "Quackers",
-		X:               10.5,
-		Y:               20.0,
-		Z:               30.75,
-		Velocity:        5.2,
-		Color:           "yellow",
+		ID:               "duck-1",
+		Name:             "Quackers",
+		X:                10.5,
+		Y:                20.0,
+		Z:                30.75,
+		Velocity:         5.2,
+		Color:            "yellow",
 		ActiveBoostUntil: now,
 	}
 
@@ -156,13 +156,13 @@ func TestDuck_ActiveBoostUntil_ExcludedFromJSON(t *testing.T) {
 	// Explicitly test that ActiveBoostUntil is excluded even when set to a non-zero value
 	boostTime := time.Date(2026, 6, 14, 12, 0, 0, 0, time.UTC)
 	d := Duck{
-		ID:              "boost-duck",
-		Name:            "Speedy",
-		X:               0,
-		Y:               0,
-		Z:               0,
-		Velocity:        100,
-		Color:           "red",
+		ID:               "boost-duck",
+		Name:             "Speedy",
+		X:                0,
+		Y:                0,
+		Z:                0,
+		Velocity:         100,
+		Color:            "red",
 		ActiveBoostUntil: boostTime,
 	}
 
@@ -192,13 +192,13 @@ func TestDuck_ActiveBoostUntil_ExcludedFromJSON(t *testing.T) {
 func TestDuck_ToState_ConvertsCorrectly(t *testing.T) {
 	now := time.Now()
 	d := Duck{
-		ID:              "duck-3",
-		Name:            "Converter",
-		X:               5.0,
-		Y:               6.0,
-		Z:               7.0,
-		Velocity:        3.0,
-		Color:           "blue",
+		ID:               "duck-3",
+		Name:             "Converter",
+		X:                5.0,
+		Y:                6.0,
+		Z:                7.0,
+		Velocity:         3.0,
+		Color:            "blue",
 		ActiveBoostUntil: now,
 	}
 

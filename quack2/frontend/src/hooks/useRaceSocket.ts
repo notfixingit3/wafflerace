@@ -16,9 +16,7 @@ export interface DuckState {
 export interface UseRaceSocketReturn {
   connected: boolean;
   ducks: DuckState[];
-  winner: string | null;
-  finished: boolean;
-  sendCommand: (action: string) => void;
+  sendCommand: (_action: string) => void;
 }
 
 const DEFAULT_WS_URL = 'ws://localhost:8080/ws';
@@ -35,8 +33,6 @@ function getWsUrl(): string {
 export function useRaceSocket(): UseRaceSocketReturn {
   const [connected, setConnected] = useState(false);
   const [ducks, setDucks] = useState<DuckState[]>([]);
-  const [winner, setWinner] = useState<string | null>(null);
-  const [finished, setFinished] = useState(false);
 
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectDelayRef = useRef(BASE_RECONNECT_DELAY);
@@ -89,8 +85,8 @@ export function useRaceSocket(): UseRaceSocketReturn {
           if (Array.isArray(data)) {
             setDucks(data as DuckState[]);
           }
-        } catch {
-          // Ignore messages that are not valid JSON arrays
+        } catch (err) {
+          console.error('failed to parse WebSocket message:', err);
         }
       });
 
@@ -104,11 +100,11 @@ export function useRaceSocket(): UseRaceSocketReturn {
         }
       });
 
-      ws.addEventListener('error', () => {
-        // onerror is always followed by onclose; reconnect is handled there
+      ws.addEventListener('error', (event: Event) => {
+        console.error('WebSocket error:', event);
       });
-    } catch {
-      // WebSocket constructor threw — schedule reconnect
+    } catch (err) {
+      console.error('WebSocket connection failed:', err);
       if (mountedRef.current) {
         scheduleReconnect();
       }
@@ -145,11 +141,11 @@ export function useRaceSocket(): UseRaceSocketReturn {
     };
   }, []);
 
-  const sendCommand = useCallback((action: string) => {
+  const sendCommand = useCallback((_action: string) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({ action }));
+      wsRef.current.send(JSON.stringify({ action: _action }));
     }
   }, []);
 
-  return { connected, ducks, winner, finished, sendCommand };
+  return { connected, ducks, sendCommand };
 }

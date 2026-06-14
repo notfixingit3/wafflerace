@@ -15,7 +15,7 @@ class MockWebSocket extends EventTarget {
   sentData: string[] = [];
   closed = false;
 
-  constructor(public url: string) {
+  constructor(_url: string) {
     super();
   }
 
@@ -76,8 +76,6 @@ describe('useRaceSocket', () => {
 
     expect(result.current.connected).toBe(false);
     expect(result.current.ducks).toEqual([]);
-    expect(result.current.winner).toBeNull();
-    expect(result.current.finished).toBe(false);
     expect(createWsMock).toHaveBeenCalledTimes(1);
 
     const ws = latestWs();

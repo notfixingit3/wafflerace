@@ -33,12 +33,7 @@ const duckB: DuckState = {
   color: 'blue',
 };
 
-type TestHarnessProps = {
-  ducks: DuckState[];
-  onRender: (ducks: DuckState[]) => void;
-};
-
-function TestHarness({ ducks, onRender }: TestHarnessProps) {
+function TestHarness({ ducks, onRender }: { ducks: DuckState[]; onRender: (_ducks: DuckState[]) => void }) {
   const interpolated = useInterpolatedDucks(ducks);
 
   useEffect(() => {
@@ -81,7 +76,7 @@ describe('useInterpolatedDucks', () => {
     });
   }
 
-  function harness(props: TestHarnessProps) {
+  function harness(props: { ducks: DuckState[]; onRender: (_ducks: DuckState[]) => void }) {
     return createElement(TestHarness, props);
   }
 

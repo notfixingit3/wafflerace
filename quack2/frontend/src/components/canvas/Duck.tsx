@@ -4,7 +4,6 @@ import React from 'react';
 import { Text } from '@react-three/drei';
 
 export interface DuckProps {
-  id: string;
   name: string;
   x: number;
   y: number;
@@ -12,7 +11,7 @@ export interface DuckProps {
   color: string;
 }
 
-export default function Duck({ id: _id, name, x, y, z, color }: DuckProps): JSX.Element {
+export default function Duck({ name, x, y, z, color }: DuckProps): JSX.Element {
   return (
     <>
       <mesh position={[x, y, z]}>

@@ -2,11 +2,8 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
-	"strconv"
-	"strings"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -28,15 +25,12 @@ type controlMsg struct {
 }
 
 func main() {
-	// Initialize the game engine.
+	// Initialize the game engine. The server starts with zero ducks and the
+	// race paused; the frontend control panel owns spawn/start.
 	engine := game.NewEngine(game.Config{BaseVelocity: 5.0, FinishLineZ: 200.0})
-	engine.AddDuck("Duck-1")
-	engine.AddDuck("Duck-2")
-	engine.AddDuck("Duck-3")
-	engine.Start()
 
 	// Initialize the WebSocket hub and run it.
-	hubInstance := hub.NewHub()
+	hubInstance := hub.NewHub(engine)
 	hubInstance.Run()
 
 	// Initialize the mock chat listener.
@@ -85,7 +79,7 @@ func main() {
 
 	// HTTP handlers.
 	http.HandleFunc("/health", corsMiddleware(healthHandler))
-	http.HandleFunc("/ws", corsMiddleware(wsHandler(engine, hubInstance)))
+	http.HandleFunc("/ws", corsMiddleware(wsHandler(hubInstance)))
 
 	log.Println("Server listening on :8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
@@ -101,8 +95,9 @@ func healthHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(`{"status":"ok"}`))
 }
 
-// wsHandler upgrades HTTP to WebSocket and processes client control messages.
-func wsHandler(engine *game.Engine, hubInstance *hub.Hub) http.HandlerFunc {
+// wsHandler upgrades HTTP to WebSocket and forwards client control messages to
+// the hub.
+func wsHandler(hubInstance *hub.Hub) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		conn, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
@@ -123,43 +118,9 @@ func wsHandler(engine *game.Engine, hubInstance *hub.Hub) http.HandlerFunc {
 				continue
 			}
 
-			switch cm.Action {
-			case "spawn":
-				engine.AddDuck(fmt.Sprintf("Duck-%d", len(engine.Ducks())+1))
-			case "remove":
-				if id := lastDuckID(engine); id != "" {
-					engine.RemoveDuck(id)
-				}
-			case "start":
-				engine.Start()
-			case "pause":
-				engine.Pause()
-			case "reset":
-				engine.ResetRace()
-			}
+			hubInstance.SendCommand(cm.Action)
 		}
 	}
-}
-
-// lastDuckID returns the ID of the duck with the highest numeric suffix.
-func lastDuckID(engine *game.Engine) string {
-	var lastID string
-	var lastNum int
-	for _, d := range engine.Ducks() {
-		parts := strings.Split(d.ID, "-")
-		if len(parts) != 2 {
-			continue
-		}
-		n, err := strconv.Atoi(parts[1])
-		if err != nil {
-			continue
-		}
-		if n > lastNum {
-			lastNum = n
-			lastID = d.ID
-		}
-	}
-	return lastID
 }
 
 // corsMiddleware adds CORS headers for the local frontend origin.

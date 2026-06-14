@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/wafflerace/quack2/backend/internal/game"
 )
 
 // testWebSocketServer starts an httptest.Server that upgrades to WebSocket.
@@ -47,7 +48,7 @@ func TestHub_ClientConnectsAndReceivesBroadcast(t *testing.T) {
 	srv, wsURL := testWebSocketServer(t)
 	defer srv.Close()
 
-	hub := NewHub()
+	hub := NewHub(game.NewEngine(game.Config{}))
 	hub.Run()
 
 	conn, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
@@ -79,7 +80,7 @@ func TestHub_MultipleClientsReceiveSameBroadcast(t *testing.T) {
 	srv, wsURL := testWebSocketServer(t)
 	defer srv.Close()
 
-	hub := NewHub()
+	hub := NewHub(game.NewEngine(game.Config{}))
 	hub.Run()
 
 	const numClients = 3
@@ -115,7 +116,7 @@ func TestHub_DisconnectedClientHandledCleanly(t *testing.T) {
 	srv, wsURL := testWebSocketServer(t)
 	defer srv.Close()
 
-	hub := NewHub()
+	hub := NewHub(game.NewEngine(game.Config{}))
 	hub.Run()
 
 	conn, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
