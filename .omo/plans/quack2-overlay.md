@@ -1216,7 +1216,7 @@ Critical Path: 1 → 8 → 13 → 15 → 19 → 21 → 25 → F1-F4 → user oka
   **Commit**: YES
   - Message: `chore(docker): add docker-compose.yml`
 
-- [ ] 25. End-to-end integration smoke test
+- [x] 25. End-to-end integration smoke test
 
   **What to do**:
   - Run `docker compose up --build -d` in `quack2/`
