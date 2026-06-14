@@ -72,6 +72,19 @@ temp/
 .air.toml
 tmp/air
 
+# Next.js build
+.next/
+out/
+dist/
+
+# OMO evidence
+.omo/evidence/
+.omo/notepads/*/
+
+# Keep these
+!.omo/plans/
+!.omo/boulder.json
+
 # Misc
 *.bak
 *.orig
