@@ -1175,7 +1175,7 @@ Critical Path: 1 → 8 → 13 → 15 → 19 → 21 → 25 → F1-F4 → user oka
   **Commit**: YES
   - Message: `chore(docker): add frontend Dockerfile`
 
-- [ ] 24. docker-compose.yml
+- [x] 24. docker-compose.yml
 
   **What to do**:
   - Create `quack2/docker-compose.yml`
