@@ -13,9 +13,17 @@ export interface DuckState {
   color: string;
 }
 
+export interface RaceState {
+  ducks: DuckState[];
+  winner: DuckState | null;
+  finished: boolean;
+}
+
 export interface UseRaceSocketReturn {
   connected: boolean;
   ducks: DuckState[];
+  winner: DuckState | null;
+  finished: boolean;
   sendCommand: (_action: string) => void;
 }
 
@@ -33,6 +41,8 @@ function getWsUrl(): string {
 export function useRaceSocket(): UseRaceSocketReturn {
   const [connected, setConnected] = useState(false);
   const [ducks, setDucks] = useState<DuckState[]>([]);
+  const [winner, setWinner] = useState<DuckState | null>(null);
+  const [finished, setFinished] = useState(false);
 
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectDelayRef = useRef(BASE_RECONNECT_DELAY);
@@ -81,12 +91,19 @@ export function useRaceSocket(): UseRaceSocketReturn {
       ws.addEventListener('message', (event: MessageEvent) => {
         if (!mountedRef.current) return;
         try {
-          const data = JSON.parse(event.data);
+          const data = JSON.parse(event.data) as RaceState | DuckState[] | unknown;
           if (Array.isArray(data)) {
             setDucks(data as DuckState[]);
+            return;
           }
-        } catch (err) {
-          console.error('failed to parse WebSocket message:', err);
+          if (data && typeof data === 'object') {
+            const state = data as RaceState;
+            setDucks(Array.isArray(state.ducks) ? state.ducks : []);
+            setWinner(state.winner ?? null);
+            setFinished(state.finished ?? false);
+          }
+        } catch {
+          return;
         }
       });
 
@@ -100,11 +117,10 @@ export function useRaceSocket(): UseRaceSocketReturn {
         }
       });
 
-      ws.addEventListener('error', (event: Event) => {
-        console.error('WebSocket error:', event);
+      ws.addEventListener('error', () => {
+        return;
       });
-    } catch (err) {
-      console.error('WebSocket connection failed:', err);
+    } catch {
       if (mountedRef.current) {
         scheduleReconnect();
       }
@@ -147,5 +163,5 @@ export function useRaceSocket(): UseRaceSocketReturn {
     }
   }, []);
 
-  return { connected, ducks, sendCommand };
+  return { connected, ducks, winner, finished, sendCommand };
 }

@@ -27,8 +27,23 @@ const disconnectedStyle: React.CSSProperties = {
   zIndex: 10,
 };
 
+const winnerStyle: React.CSSProperties = {
+  position: 'absolute',
+  top: '10%',
+  left: 0,
+  right: 0,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  color: '#FFD700',
+  fontSize: '3rem',
+  fontWeight: 'bold',
+  textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
+  zIndex: 5,
+};
+
 export default function OverlayPage() {
-  const { connected, ducks } = useRaceSocket();
+  const { connected, ducks, winner, finished } = useRaceSocket();
   const interpolatedDucks = useInterpolatedDucks(ducks);
 
   const leadDuck =
@@ -53,6 +68,12 @@ export default function OverlayPage() {
           />
         ))}
       </RaceScene>
+
+      {(winner || finished) && (
+        <div style={winnerStyle} role="status" aria-live="polite">
+          Winner: {winner ? winner.name : 'Race Finished'}
+        </div>
+      )}
 
       {!connected && (
         <div style={disconnectedStyle} role="status" aria-live="polite">

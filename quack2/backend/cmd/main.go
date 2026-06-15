@@ -35,7 +35,7 @@ func main() {
 
 	// Initialize the mock chat listener.
 	chatCmds := make(chan chat.ChatCommand, 10)
-	mockChat := chat.NewMockChat(42, chatCmds)
+	mockChat := chat.NewMockChat(42, chatCmds, nil)
 	mockChat.Start()
 
 	// Forward chat commands to the engine for !boost commands.
@@ -55,7 +55,7 @@ func main() {
 		}
 	}()
 
-	// 10Hz ticker: tick the engine and broadcast duck state.
+	// 10Hz ticker: tick the engine and broadcast race state.
 	go func() {
 		ticker := time.NewTicker(100 * time.Millisecond)
 		defer ticker.Stop()
@@ -68,9 +68,22 @@ func main() {
 				states = append(states, d.ToState())
 			}
 
-			jsonBytes, err := json.Marshal(states)
+			winner := engine.Winner()
+			var winnerState *game.DuckState
+			if winner != nil {
+				s := winner.ToState()
+				winnerState = &s
+			}
+
+			payload := map[string]any{
+				"ducks":    states,
+				"winner":   winnerState,
+				"finished": engine.Finished(),
+			}
+
+			jsonBytes, err := json.Marshal(payload)
 			if err != nil {
-				log.Printf("failed to marshal duck states: %v", err)
+				log.Printf("failed to marshal race state: %v", err)
 				continue
 			}
 			hubInstance.Broadcast(jsonBytes)

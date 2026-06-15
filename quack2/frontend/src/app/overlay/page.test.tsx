@@ -54,6 +54,8 @@ describe('OverlayPage', () => {
     mockUseRaceSocket.mockReturnValue({
       connected: true,
       ducks: sampleDucks,
+      winner: null,
+      finished: false,
       sendCommand: mockSendCommand,
     });
     mockUseInterpolatedDucks.mockReturnValue(sampleDucks);
@@ -75,6 +77,8 @@ describe('OverlayPage', () => {
     mockUseRaceSocket.mockReturnValue({
       connected: false,
       ducks: [],
+      winner: null,
+      finished: false,
       sendCommand: mockSendCommand,
     });
     mockUseInterpolatedDucks.mockReturnValue([]);
@@ -82,5 +86,35 @@ describe('OverlayPage', () => {
     render(<OverlayPage />);
 
     expect(screen.getByText('Disconnected - reconnecting...')).toBeInTheDocument();
+  });
+
+  it('shows winner banner when finished', () => {
+    mockUseRaceSocket.mockReturnValue({
+      connected: true,
+      ducks: sampleDucks,
+      winner: null,
+      finished: true,
+      sendCommand: mockSendCommand,
+    });
+    mockUseInterpolatedDucks.mockReturnValue(sampleDucks);
+
+    render(<OverlayPage />);
+
+    expect(screen.getByText('Winner: Race Finished')).toBeInTheDocument();
+  });
+
+  it('shows winner banner with winner name', () => {
+    mockUseRaceSocket.mockReturnValue({
+      connected: true,
+      ducks: sampleDucks,
+      winner: sampleDucks[1],
+      finished: true,
+      sendCommand: mockSendCommand,
+    });
+    mockUseInterpolatedDucks.mockReturnValue(sampleDucks);
+
+    render(<OverlayPage />);
+
+    expect(screen.getByText('Winner: Duck-2')).toBeInTheDocument();
   });
 });

@@ -17,6 +17,8 @@ vi.mock('@/hooks/useRaceSocket', () => ({
       { id: 'duck-1', name: 'Duck-1', x: 0, y: 0, z: 10, velocity: 5, color: '#ff0000' },
       { id: 'duck-2', name: 'Duck-2', x: 10, y: 0, z: 20, velocity: 5, color: '#00ff00' },
     ],
+    winner: null,
+    finished: false,
     sendCommand: mockSendCommand,
   }),
 }));

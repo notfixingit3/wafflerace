@@ -77,6 +77,15 @@ tmp/air
 out/
 dist/
 
+# TypeScript incremental build
+**/tsconfig.tsbuildinfo
+
+# Playwright MCP snapshots
+.playwright-mcp/
+
+# Test results
+**/test-results/
+
 # OMO evidence
 .omo/evidence/
 .omo/notepads/*/

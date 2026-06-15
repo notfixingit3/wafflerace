@@ -13,21 +13,41 @@ type ChatCommand struct {
 	Timestamp time.Time // when the command was generated
 }
 
+// Config configures the timing behavior of a MockChat.
+type Config struct {
+	IntervalMin time.Duration
+	IntervalMax time.Duration
+}
+
+// DefaultConfig returns the standard mock chat interval configuration.
+func DefaultConfig() Config {
+	return Config{
+		IntervalMin: 2 * time.Second,
+		IntervalMax: 5 * time.Second,
+	}
+}
+
 // MockChat is a deterministic mock chat listener.
 // It generates !boost commands at random intervals using a seeded RNG.
 type MockChat struct {
 	seed     int64
+	config   Config
 	out      chan<- ChatCommand
 	stopCh   chan struct{}
 	stopOnce sync.Once
 	wg       sync.WaitGroup
 }
 
-// NewMockChat creates a new MockChat with the given seed and output channel.
-// The seed ensures deterministic command sequences across runs.
-func NewMockChat(seed int64, out chan<- ChatCommand) *MockChat {
+// NewMockChat creates a new MockChat with the given seed, output channel, and configuration.
+// A nil config defaults to 2–5 second intervals.
+func NewMockChat(seed int64, out chan<- ChatCommand, config *Config) *MockChat {
+	cfg := DefaultConfig()
+	if config != nil {
+		cfg = *config
+	}
 	return &MockChat{
 		seed:   seed,
+		config: cfg,
 		out:    out,
 		stopCh: make(chan struct{}),
 	}
@@ -45,8 +65,11 @@ func (mc *MockChat) Start() {
 		baseTime := time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
 		var elapsed time.Duration
 
+		intervalRange := int(mc.config.IntervalMax - mc.config.IntervalMin)
+		intervalRange = max(intervalRange, 0)
+
 		for {
-			interval := time.Duration(r.Intn(5)+1) * time.Millisecond
+			interval := mc.config.IntervalMin + time.Duration(r.Intn(intervalRange+1))
 			elapsed += interval
 
 			select {

@@ -19,6 +19,11 @@ func (e *Engine) Finished() bool {
 	return e.finished
 }
 
+// checkWinner reports whether d has just won the race. Caller must hold e.mu.
+func (e *Engine) checkWinner(d *Duck) bool {
+	return d.Z >= e.config.FinishLineZ && e.winnerID == ""
+}
+
 // ResetRace clears the winner/finished state and returns all ducks to Z=0.
 func (e *Engine) ResetRace() {
 	e.Reset()

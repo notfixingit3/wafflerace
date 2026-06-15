@@ -47,6 +47,12 @@ const sampleDucks: DuckState[] = [
   { id: 'duck-2', name: 'Duck-2', x: 5, y: 0, z: 88, velocity: 5, color: '#00ff00' },
 ];
 
+const sampleState = {
+  ducks: sampleDucks,
+  winner: sampleDucks[1],
+  finished: true,
+};
+
 const createWsMock = vi.fn();
 vi.mock('./createWebSocket', () => ({
   createWebSocket: (...args: Parameters<typeof createWsMock>) => createWsMock(...args),
@@ -85,20 +91,22 @@ describe('useRaceSocket', () => {
     expect(result.current.connected).toBe(true);
 
     act(() => {
-      ws.receiveMessage(JSON.stringify(sampleDucks));
+      ws.receiveMessage(JSON.stringify(sampleState));
     });
     expect(result.current.ducks).toHaveLength(2);
     expect(result.current.ducks[0].id).toBe('duck-1');
     expect(result.current.ducks[1].z).toBe(88);
+    expect(result.current.winner?.id).toBe('duck-2');
+    expect(result.current.finished).toBe(true);
   });
 
-  it('handles empty array from server gracefully', () => {
+  it('handles empty state from server gracefully', () => {
     renderHook(() => useRaceSocket());
     const ws = latestWs();
 
     act(() => {
       ws.triggerOpen();
-      ws.receiveMessage(JSON.stringify([]));
+      ws.receiveMessage(JSON.stringify({ ducks: [], winner: null, finished: false }));
     });
 
     expect(createWsMock).toHaveBeenCalledTimes(1);

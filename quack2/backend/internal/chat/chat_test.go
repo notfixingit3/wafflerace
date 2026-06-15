@@ -11,8 +11,13 @@ func TestMockChatDeterministic(t *testing.T) {
 	ch1 := make(chan ChatCommand, 10)
 	ch2 := make(chan ChatCommand, 10)
 
-	mc1 := NewMockChat(42, ch1)
-	mc2 := NewMockChat(42, ch2)
+	fastConfig := &Config{
+		IntervalMin: 1 * time.Millisecond,
+		IntervalMax: 5 * time.Millisecond,
+	}
+
+	mc1 := NewMockChat(42, ch1, fastConfig)
+	mc2 := NewMockChat(42, ch2, fastConfig)
 
 	mc1.Start()
 	mc2.Start()
@@ -51,7 +56,11 @@ func TestMockChatDeterministic(t *testing.T) {
 // with a target duck name.
 func TestMockChatBoostCommand(t *testing.T) {
 	ch := make(chan ChatCommand, 10)
-	mc := NewMockChat(42, ch)
+	fastConfig := &Config{
+		IntervalMin: 1 * time.Millisecond,
+		IntervalMax: 5 * time.Millisecond,
+	}
+	mc := NewMockChat(42, ch, fastConfig)
 	mc.Start()
 
 	timeout := 200 * time.Millisecond
@@ -74,7 +83,11 @@ func TestMockChatBoostCommand(t *testing.T) {
 // no commands arrive after Stop is called.
 func TestMockChatStop(t *testing.T) {
 	ch := make(chan ChatCommand, 10)
-	mc := NewMockChat(42, ch)
+	fastConfig := &Config{
+		IntervalMin: 1 * time.Millisecond,
+		IntervalMax: 5 * time.Millisecond,
+	}
+	mc := NewMockChat(42, ch, fastConfig)
 	mc.Start()
 
 	// Expect at least one command before stopping

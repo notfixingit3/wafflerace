@@ -49,7 +49,7 @@ func (e *Engine) Tick(dt time.Duration) {
 	for _, d := range e.ducks {
 		d.Z += e.effectiveVelocity(d, now) * seconds
 
-		if d.Z >= e.config.FinishLineZ && e.winnerID == "" {
+		if e.checkWinner(d) {
 			e.winnerID = d.ID
 			e.finished = true
 		}
