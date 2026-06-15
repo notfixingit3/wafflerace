@@ -89,10 +89,10 @@ dist/
 # OMO evidence
 .omo/evidence/
 .omo/notepads/*/
+.omo/boulder.json
 
 # Keep these
 !.omo/plans/
-!.omo/boulder.json
 
 # Misc
 *.bak
